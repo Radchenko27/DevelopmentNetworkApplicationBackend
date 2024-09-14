@@ -1,0 +1,104 @@
+{% extends "base.html" %} {% load static %} {% block body %}
+<div class="main__container">
+    <h2 class="main_title">Оформление</h2>
+  </div>
+<section class="modal-basket container">
+  <div class="basket-header">
+    <h2>ОСАГОewrtyhyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy</h2>
+    <div class="basket-summary row">
+        <div class="col-6">
+          <h4>Итого: <strong>{{ total_price }} ₽</strong></h4>
+        </div>
+        <div class="col-6 text-right">
+          <!-- <button type="button" class="btn btn-primary btn-lg">
+            Оформить заказ
+          </button> -->
+        </div>
+  </div>
+
+  <!-- <div class="basket-summary row">
+    <div class="col-6">
+      <h4>Итого: <strong>{{ total_price }} ₽</strong></h4>
+    </div>
+    <div class="col-6 text-right">
+      <button type="button" class="search-button">
+        Оформить заказ
+      </button>
+    </div>
+  </div> -->
+  <!-- Начало цикла по элементам корзины -->
+  <div class="basket-items">
+    <!-- {% for basket in user_baskets %} -->
+    <div class="basket-item row align-items-center">
+      <!-- Изображение товара -->
+      <div class="col-lg-2 col-md-3 col-sm-4 basket-item-image">
+        <!-- {% if basket.dish.image %} -->
+        <img src="C:\Users\dimar\Downloads\5283021.png" class="img-fluid" />
+        <!-- {% else %} -->
+        <!-- <img src="" alt="Нет изображения" class="img-fluid" /> -->
+        <!-- {% endif %} -->
+      </div>
+
+      <!-- Детали товара -->
+      <div class="col-lg-4 col-md-5 col-sm-8 basket-item-details">
+        <h5 class="item-name">{{ basket.dish.name }}</h5>
+        <p class="item-price">{{ basket.dish.sell_price }} ₽ за штуку</p>
+      </div>
+
+      <!-- Управление количеством -->
+      <div class="col-lg-3 col-md-4 col-sm-6 basket-item-quantity">
+        <div class="input-group">
+          <span class="input-group-btn">
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-sm decrement"
+              data-basket-id=""
+              data-basket-change-url=""
+            >
+              <!-- {% csrf_token %} -->
+              -
+            </button>
+          </span>
+          <input
+            type="text"
+            class="form-control number"
+            value="{{ basket.quantity }}"
+            readonly
+          />
+          <span class="input-group-btn">
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-sm increment"
+              data-basket-id=""
+              data-basket-change-url=""
+            >
+              <!-- {% csrf_token %} -->
+              +
+            </button>
+          </span>
+        </div>
+      </div>
+
+      <!-- Общая сумма по товару -->
+      <div class="col-lg-2 col-md-2 col-sm-6 basket-item-total">
+        <p class="item-total"><strong>{{ basket.dishes_price }} ₽</strong></p>
+      </div>
+
+      <!-- Удалить товар из корзины -->
+      <div class="col-lg-1 col-md-1 col-sm-2 basket-item-remove">
+        <a href="" class="remove-from-basket" data-basket-id="">
+          <!-- {% csrf_token %} -->
+          <img src="" alt="Удалить" class="delete-icon" />
+        </a>
+      </div>
+    </div>
+    <hr />
+    <!-- {% endfor %} -->
+  </div>
+
+  <!-- Итого по корзине -->
+</section>
+
+<!-- Итог и кнопки оформления -->
+
+{% endblock body %}

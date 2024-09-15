@@ -5,25 +5,17 @@
 <div class="services">
   <div class="driver-details">
     <div class="driver-details__image">
-      <img src="C:/Users/dimar/Downloads/5283021.png" alt="Driver Image" />
+      <img src="{{driver.image}}" alt="Driver Image" />
     </div>
     <div class="driver-details__info">
-      <h2 class="driver-details__name">Радченко Дмитрий Сергеевич</h2>
-      <p class="driver-details__experience">
-        Опыт: более 10 лет вождения различных типов транспортных средств.
+      <h2 class="driver-details__name">{{driver.name}}</h2>
+      <p class="driver-details__experience">Стаж: {{driver.experience}}</p>
+      <p class="driver-details__license">Категории прав: {{driver.license}}</p>
+      <p class="driver-details__certificate_number">
+        Номер водительского удостоверения: {{driver.certificate_number}}.
       </p>
-      <p class="driver-details__license">Категории прав: A, B, C, D</p>
-      <p class="driver-details__skills">
-        Специализация: пассажирские перевозки, грузоперевозки, вождение в
-        условиях сложных погодных условий.
-      </p>
-      <p class="driver-details__bio">
-        Дмитрий Сергеевич – опытный водитель, работающий в различных областях
-        автотранспортной индустрии. Имеет многолетний опыт работы с легковыми и
-        грузовыми автомобилями, а также пассажирскими автобусами. Особое
-        внимание уделяет безопасности движения и точности доставки.
-      </p>
-      <a href="index.html" class="driver-details__back-button">Вернуться</a>
+      <p class="driver-details__characteristics">{{driver.characteristics}}</p>
+      <!-- <a href="index.html" class="driver-details__back-button">Вернуться</a> -->
     </div>
   </div>
 </div>

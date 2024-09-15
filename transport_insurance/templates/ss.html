@@ -1,129 +1,106 @@
-<!DOCTYPE html>
-<html lang="ru">
+<!-- <!DOCTYPE html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Автострахование</title>
-    <link rel="stylesheet" href="styles.css" />
-    <!-- Подключаем свои стили -->
+    <title>Insurance Policy Table</title>
+    <style>
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        font-size: 18px;
+        text-align: left;
+      }
+      th,
+      td {
+        padding: 12px;
+        border: 1px solid #ddd;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+    </style>
   </head>
   <body>
-    <div class="above__header__сontainer">
-      <div class="above__header">
-        <ingos-logo class="logo header__logo">
-          <a routerlink="/" href="https://www.ingos.ru/auto">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              xmlns:xlink="http://www.w3.org/1999/xlink"
-              viewBox="0 0 130 28"
-              class="ng-star-inserted"
-            >
-              <path
-                fill-rule="evenodd"
-                clip-rule="evenodd"
-                d="M61.36 10.45c-2.29 0-3.9-1.5-3.9-3.95 0-2.44 1.61-3.95 3.9-3.95 1.2 0 2.2.32 3.02 1.02l1.77-1.7A6.92 6.92 0 0 0 61.32 0c-3.95 0-6.8 2.66-6.8 6.5 0 3.82 2.85 6.5 6.8 6.5 2.03 0 3.64-.75 4.83-1.87l-1.77-1.7a4.5 4.5 0 0 1-3.02 1.02ZM39.44 6.48C39.44 2.7 42.3.05 46.2.05 50.17.05 53 2.7 53 6.48c0 3.8-2.86 6.43-6.8 6.43s-6.76-2.64-6.76-6.43Zm2.95 0c0 2.4 1.57 3.9 3.82 3.9 2.27 0 3.83-1.5 3.83-3.9 0-2.42-1.56-3.9-3.83-3.9-2.25 0-3.82 1.48-3.82 3.9Zm-34.5-.54-5.38 6.83H0V.2h2.99v6.34c0 .62-.02 1.1-.04 1.55l-.02.6c.1-.02.43-.54.73-1 .18-.28.35-.54.45-.67L9.44.2H12v12.57H9v-6.7c0-.54 0-1 .04-1.63-.13.02-.49.55-.8 1l-.34.5Zm18.67 6.83h-2.99V7.76h-5.8v5H14.8V.2h2.99v4.9h5.8V.2h2.98v12.57Zm2.8 0h3V2.84h6.84V.2h-9.84v12.57ZM70.08 6.5c0 2.44 1.6 3.95 3.89 3.95 1.2 0 2.2-.32 3.02-1.02l1.77 1.7A6.92 6.92 0 0 1 73.93 13c-3.95 0-6.8-2.68-6.8-6.5 0-3.84 2.85-6.5 6.8-6.5 2.03 0 3.64.75 4.83 1.87L77 3.57a4.5 4.5 0 0 0-3.02-1.02c-2.29 0-3.9 1.5-3.9 3.95Zm9.95-3.73h4.18v10h3v-10h4.18V.2H80.03v2.57ZM95.89 9.1v3.67H92.9V.2h5.68c4.4 0 5.46 2.31 5.46 4.47 0 2.12-1.4 4.43-5.62 4.43h-2.53Zm5.07-4.45c0-1.04-.68-1.97-2.65-1.97h-2.42v3.95h2.3c2.02 0 2.77-.85 2.77-1.98Zm2.26 8.12h2.86l1.07-2.32h5.72l1.05 2.32h6.34l3.12-4.28 3.12 4.28h3.5l-4.81-6.38 4.66-6.2h-3.5l-2.97 4.08L120.43.2h-3.47l4.63 6.2-4.75 6.28L111.2.2h-2.32l-5.67 12.57Zm6.31-7.59c.2-.53.47-1.24.57-1.27.15.5.3.92.48 1.35l1.17 2.8h-3.53l1.13-2.4.18-.48ZM46.28 17.13a6.25 6.25 0 0 0 1.48-.23l.11.65a5.7 5.7 0 0 1-1.6.26c-.62.04-1.24.09-1.67.29-1.15.56-1.37 1.7-1.37 2.6.45-.83 1.5-1.23 2.52-1.23 1.66 0 2.76 1.02 2.76 2.74 0 1.62-1.23 2.9-2.95 2.9-1.84 0-3.03-1.2-3.03-3.4 0-2.06.23-3.42 1.76-4.18.58-.29 1.3-.34 1.99-.4Zm-.7 3.02a2.3 2.3 0 0 0-2.28 1.7v.04c0 1.62.96 2.55 2.25 2.55 1.27 0 2.19-.97 2.19-2.2 0-1.27-.78-2.09-2.16-2.09ZM5.74 25.01h.8v-7.64H0V25h.8v-6.92h4.94V25Zm5.12-5.14c1.26 0 2.05.9 2.05 2.25s-.9 2.32-2.15 2.32c-.74 0-1.48-.27-1.9-1.01v-2.2c.25-.66.97-1.36 2-1.36Zm.07-.68c-.88 0-1.74.47-2.06 1.34h-.04c.04-.2.04-.43.04-.68v-.52h-.73v7.86h.73v-3.08c.4.61 1.2 1 2.03 1 1.64 0 2.77-1.3 2.77-3.05 0-1.68-1.03-2.87-2.74-2.87Zm6.57 5.93c-1.81 0-3.06-1.25-3.06-2.96 0-1.72 1.24-2.97 3.06-2.97 1.8 0 3.05 1.25 3.05 2.97 0 1.71-1.25 2.96-3.05 2.96Zm0-5.25a2.2 2.2 0 0 0-2.29 2.29 2.2 2.2 0 0 0 2.29 2.28c1.33 0 2.28-.93 2.28-2.28 0-1.35-.98-2.3-2.28-2.3Zm8.7 3.66c-.37.54-1 .91-1.74.91-1.4 0-2.38-.9-2.38-2.28 0-1.33.97-2.3 2.28-2.3.74 0 1.26.26 1.68.8l.57-.39c-.4-.65-1.32-1.08-2.25-1.08a2.9 2.9 0 0 0-3.05 2.97c0 1.8 1.25 2.96 3.1 2.96.86 0 1.88-.42 2.3-1.2l-.5-.39Zm2.89-3.52H26.8v-.68h5.32v.68h-2.3v5h-.73v-5Zm3.21 2.15c0 1.71 1.25 2.96 3.06 2.96 1.8 0 3.05-1.25 3.05-2.96 0-1.72-1.25-2.97-3.05-2.97-1.82 0-3.06 1.25-3.06 2.97Zm.77 0c0-1.36.97-2.3 2.29-2.3 1.3 0 2.28.95 2.28 2.3 0 1.35-.94 2.28-2.28 2.28a2.2 2.2 0 0 1-2.29-2.28ZM49.63 25h2.04c1.83 0 2.43-.92 2.43-1.92 0-1.04-.54-1.9-2.33-1.9h-1.42v-1.86h-.72v5.68Zm2.03-3.15c1.2 0 1.67.46 1.67 1.24 0 .76-.45 1.23-1.68 1.23h-1.3v-2.47h1.3Zm3.43 3.15h.73v-5.68h-.73v5.68Zm3.74-5h-2.28v-.68h5.32v.68h-2.31v5h-.73v-5Zm3.78 5h2.3c1.81 0 2.42-.92 2.42-1.92 0-1.04-.54-1.9-2.34-1.9h-1.66v-1.86h-.72v5.68Zm2.26-3.15c1.2 0 1.69.46 1.69 1.24 0 .76-.45 1.23-1.7 1.23h-1.53v-2.47h1.54Zm7.62 5.44c-.16 0-.33-.02-.49-.08l.2-.68c.07.02.22.06.28.06.5 0 .83-.27 1.27-1.34l.16-.37-2.97-5.56h.87L74.3 24l1.88-4.66h.8L74.64 25c-.79 1.9-1.31 2.3-2.14 2.3Zm5.2-2.3h2.47c1.58 0 2.43-.54 2.43-1.57 0-.72-.34-1.23-1.03-1.41.53-.26.82-.67.82-1.27 0-1.06-.77-1.42-2.32-1.42h-2.38v5.68Zm2.56-2.56c1.03 0 1.57.28 1.57.93 0 .68-.6.97-1.74.97H78.4v-1.9h1.84ZM80.02 20c.87 0 1.59.14 1.59.86 0 .59-.5.93-1.27.93H78.4v-1.8h1.61Zm6.47 4.44c.75 0 1.44-.43 1.79-.94l.49.43a2.67 2.67 0 0 1-2.31 1.19c-1.84 0-3.08-1.16-3.08-2.96 0-1.67 1.03-2.97 2.93-2.97 1.53 0 2.67 1.02 2.67 2.58 0 .2-.02.41-.05.6h-4.78c.02 1.32 1.01 2.07 2.34 2.07Zm1.7-2.72c-.03-1.16-.76-1.86-1.93-1.86-1.24 0-2 .8-2.12 1.86h4.06Zm4.63-1.85c1.26 0 2.04.9 2.04 2.25s-.9 2.32-2.14 2.32c-.75 0-1.49-.27-1.9-1.01v-2.2c.25-.66.96-1.36 2-1.36Zm.06-.68c-.88 0-1.74.47-2.06 1.34h-.03c.03-.2.03-.43.03-.68v-.52h-.72v7.86h.72v-3.08c.4.61 1.2 1 2.03 1 1.64 0 2.78-1.3 2.78-3.05 0-1.68-1.04-2.87-2.75-2.87Zm6.63 5.25c.74 0 1.43-.43 1.78-.94l.49.43a2.67 2.67 0 0 1-2.3 1.19c-1.85 0-3.09-1.16-3.09-2.96 0-1.67 1.03-2.97 2.94-2.97 1.53 0 2.66 1.02 2.66 2.58 0 .2-.02.41-.04.6h-4.79c.03 1.32 1.02 2.07 2.35 2.07Zm1.7-2.72c-.03-1.16-.77-1.86-1.94-1.86-1.24 0-2 .8-2.12 1.86h4.06Zm6.32 3.29h.72v-5.68h-.72v2.45h-3.7v-2.45h-.72v5.68h.73v-2.56h3.69v2.56Zm7.33 0h-.72v-2.56h-3.7v2.56h-.72v-5.68h.73v2.45h3.69v-2.45h.72v5.68Zm1.47 0h2.04c1.83 0 2.44-.92 2.44-1.92 0-1.04-.54-1.9-2.34-1.9h-1.41v-1.86h-.73v5.68Zm2.03-3.15c1.2 0 1.67.46 1.67 1.24 0 .76-.44 1.23-1.68 1.23h-1.3v-2.47h1.31Zm3.44 3.15h.72v-5.68h-.72v5.68Zm2.9 0h-.72v-5.68h.68l2.37 3 2.33-3h.64v5.68h-.72v-4.45l-2.25 2.87-2.33-2.87V25Z"
-              ></path></svg
-            ><!----> </a
-          ><!----><!---->
-        </ingos-logo>
-      </div>
-    </div>
-    <header class="header">
-      <div class="header__card">
-        <div class="container header__container">
-          <!-- <nav class="main-nav">
-            <ul class="main-nav__list">
-              <li><a href="#">Главная</a></li>
-              <li><a href="#">Автострахование</a></li>
-              <li><a href="#">Имущество</a></li>
-              <li><a href="#">Путешествия</a></li>
-              <li><a href="#">Контакты</a></li>
-              <button class="header__button">Войти</button>
-            </ul>
-          </nav> -->
-          <div class="search-block">
-            <form class="search-form">
-              <input type="text" class="search-input" placeholder="Поиск..." />
-              <button type="submit" class="search-button">Искать</button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </header>
-    <div>
-      <div class="main__container">
-        <h2 class="main_title">Автострахование онлайн</h2>
-      </div>
-    </div>
+    <h2>Insurance Policy Details</h2>
 
-    <main class="content">
-      <section class="services">
-        <div class="container services__container">
-          <div class="service-item">
-            <div class="service-item__image">
-              <img src="C:\Users\dimar\Downloads\5283021.png" />
-            </div>
-            <h2 class="service-item__title">Радченко Дмитрий Сергеевич</h2>
-            <p class="service-item__description">
-              Защитите свой автомобиль от любых рисков.
-            </p>
-            <button class="service-item__button">Подробнее</button>
-          </div>
-          <div class="service-item">
-            <div class="service-item__image">
-              <img src="C:\Users\dimar\Downloads\Без названия.png" />
-            </div>
-            <h2 class="service-item__title">Иванов Петр Александрович</h2>
-            <p class="service-item__description">
-              Страхование гражданской ответственности.
-            </p>
-          </div>
-          <div class="service-item">
-            <div class="service-item__image">
-              <img src="C:\Users\dimar\Downloads\kasko.svg" />
-            </div>
-            <h2 class="service-item__title">Зеленая карта</h2>
-            <p class="service-item__description">
-              Международное автострахование для поездок за границу.
-            </p>
-          </div>
-        </div>
-      </section>
-      <section class="services">
-        <div class="container services__container">
-          <div class="service-item">
-            <h2 class="service-item__title">КАСКО</h2>
-            <p class="service-item__description">
-              Защитите свой автомобиль от любых рисков.
-            </p>
-          </div>
-          <div class="service-item">
-            <h2 class="service-item__title">ОСАГО</h2>
-            <p class="service-item__description">
-              Страхование гражданской ответственности.
-            </p>
-          </div>
-          <div class="service-item">
-            <h2 class="service-item__title">Зеленая карта</h2>
-            <p class="service-item__description">
-              Международное автострахование для поездок за границу.
-            </p>
-          </div>
-        </div>
-      </section>
-    </main>
+    <table>
+      <thead>
+        <tr>
+          <th>Policy Series</th>
+          <th>Policy Number</th>
+          <th>Policy Valid From</th>
+          <th>Policy Valid To</th>
+          <th>Vehicle Number</th>
+          <th>Vehicle Make</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1234</td>
+          <td>567890</td>
+          <td>01/01/2024</td>
+          <td>01/01/2025</td>
+          <td>AB123CD</td>
+          <td>Toyota Camry</td>
+        </tr>
+      </tbody>
+    </table>
 
-    <!-- <footer class="footer">
-      <div class="container footer__container">
-        <p class="footer__text">&copy; 2024 Ингосстрах. Все права защищены.</p>
-        <nav class="footer-nav">
-          <ul class="footer-nav__list">
-            <li><a href="#">Политика конфиденциальности</a></li>
-            <li><a href="#">Пользовательское соглашение</a></li>
-          </ul>
-        </nav>
-      </div>
-    </footer> -->
+    <h2>Drivers List</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Driver Name</th>
+          <th>Driver License Number</th>
+          <th>License Expiry Date</th>
+          <th>Experience (Years)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>John Doe</td>
+          <td>123456789</td>
+          <td>10/12/2025</td>
+          <td>5</td>
+        </tr>
+        <tr>
+          <td>Jane Smith</td>
+          <td>987654321</td>
+          <td>22/07/2027</td>
+          <td>10</td>
+        </tr>
+      </tbody>
+    </table>
   </body>
-</html>
+</html> -->
+
+<table border="1">
+  <thead>
+    <tr>
+      <th rowspan="2">Полис</th>
+      <th colspan="2">Автомобиль</th>
+      <th rowspan="2">Срок действия</th>
+    </tr>
+    <tr>
+      <th>Номер</th>
+      <th>Марка</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>123456</td>
+      <td>ABC123</td>
+      <td>BMW</td>
+      <td>01.01.2024 - 01.01.2025</td>
+    </tr>
+    <tr>
+      <td>654321</td>
+      <td>XYZ789</td>
+      <td>Mercedes</td>
+      <td>01.01.2024 - 01.01.2025</td>
+    </tr>
+  </tbody>
+</table>

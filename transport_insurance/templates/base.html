@@ -14,7 +14,7 @@
     <div class="above__header__сontainer">
       <div class="above__header">
         <ingos-logo class="logo header__logo">
-          <a routerlink="/" href="https://www.ingos.ru/auto">
+          <a routerlink="/" href="{% url 'drivers_list' %}">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -42,17 +42,9 @@
               <li><a href="#">Имущество</a></li>
               <li><a href="#">Путешествия</a></li>
               <li><a href="#">Контакты</a></li> -->
-                <li>
-                  <div class="search-block">
-                  <form class="search-form">
-                    <input type="text" class="search-input" placeholder="Поиск..." />
-                    <button type="submit" class="search-button">Искать</button>
-                  </form>
-                </div>
-              </li>
-              <li>
-                <button class="header__button">Текущие услуги</button>
-              </li> 
+                {% block header %}
+
+                {% endblock header %}
             </ul>
           </nav>
           <!-- <div class="search-block">

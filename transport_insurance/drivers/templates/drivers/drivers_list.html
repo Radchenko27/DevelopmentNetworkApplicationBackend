@@ -1,6 +1,19 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block header %}
+  <li>
+    <div class="search-block">
+    <form method="GET" action="{% url 'drivers_list' %}" class="search-form">
+      <input type="text" class="search-input" name='search' placeholder="Поиск по ФИО" value="{{ request.GET.search }}" />
+      <button type="submit" class="search-button"> Искать</button>
+    </form>
+  </div>
+  </li>
+  <li>
+  <button class="header__button">Текущие услуги</button>
+  </li> 
+{% endblock header %}
 
 {% block body %}
   <div class="main__container">
@@ -9,17 +22,27 @@
   </div>
   <section class="services">
     <div class="services__container">
-      <div class="service-item">
-        <div class="service-item__image">
-          <img src="C:\Users\dimar\Downloads\5283021.png" />
+      {% for driver in drivers_list %}
+        <div class="service-item">
+            <div class="service-item__image">
+              <img src="{{driver.image}}" />
+            </div>
+            <h2 class="service-item__title">{{driver.name}}</h2>
+            <p class="service-item__description">
+              Стаж вождения: {{driver.experience}}
+            </p>
+            <a class="service-item__button" href="{% url 'driver_detail' driver.id %}">Подробнее</a >
         </div>
-        <h2 class="service-item__title">Радченко Дмитрий Сергеевич</h2>
-        <p class="service-item__description">
-          Защитите свой автомобиль от любых рисков.
-        </p>
-        <button class="service-item__button">Подробнее</button>
-      </div>
-      <div class="service-item">
+      
+     {% endfor %}
+    </div>
+    
+    
+  </section>
+{% endblock body %}
+
+
+<!-- <div class="service-item">
         <div class="service-item__image">
           <img src="C:\Users\dimar\Downloads\Без названия.png" />
         </div>
@@ -27,8 +50,8 @@
         <p class="service-item__description">
           Страхование гражданской ответственности.
         </p>
-      </div>
-      <div class="service-item">
+      </div> -->
+      <!-- <div class="service-item">
         <div class="service-item__image">
           <img src="C:\Users\dimar\Downloads\kasko.svg" />
         </div>
@@ -54,9 +77,4 @@
         <p class="service-item__description">
           Международное автострахование для поездок за границу.
         </p>
-      </div>
-    </div>
-    
-    
-  </section>
-{% endblock body %}
+      </div> -->

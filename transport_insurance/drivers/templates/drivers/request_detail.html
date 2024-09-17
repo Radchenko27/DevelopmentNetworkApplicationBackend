@@ -5,184 +5,143 @@
 <div class="services">
     <div class="driver-details">
       <style>
-        
         table {
           width: 100%;
-          border-collapse: collapse;
+          border-radius: 20px;
+          border-collapse: separate; /* Важно для округления углов */
+          border-spacing: 0;
           margin: 20px 0;
-          font-size: 16px;
-          background-color: #fff;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+          font-size: 18px;
+          /* text-align: left; */
+          border-spacing: 10px;
         }
-        th,
-        td {
-          padding: 12px 15px;
+      
+        th, td {
+          padding: 12px 0px;
+          border-radius: 10px;
           border: 1px solid #ddd;
+          border: none; 
+          width: auto;
+         
         }
-        /* th {
-          background-color: #007bff;
-          color: #fff;
+      
+        th {
+          /* background-color: #f2f2f2; */
           font-weight: bold;
-        } */
-        tr:nth-child(even) {
-          background-color: #f9f9f9;
+          color: #333;
         }
-        h2 {
-          color: #007bff;
+        td {
+          /* background-color: #f2f2f2; */
+          font-weight: normal;
+          color:#666;
+          text-align:left;
         }
+      
         .policy-info {
-          background-color: #e9ecef;
-          font-weight: bold;
-        }
-        .driver-header {
-          background-color: #6c757d;
+          background-color: #002f87; /* Цвет как у Ингосстраха */
           color: white;
-        }
-        .driver-row {
-          background-color: #f1f3f5;
-        }
-        .container {
-          max-width: 1000px;
-          font-size: 24px;
           font-weight: bold;
-          color: #002f87; /* Цвет текста как на ingos.ru */
-          margin-bottom: 10px;
+          text-align: center;
+        }
+        
+        .date-info {
+          text-align:right;
+          vertical-align:top;
+          padding: 0;
+
+        }
+  
+        table tr th:first-child, table tr td:first-child {
+          padding-left: 20px;
+        }
+      
+        /* Дополнительные стили для текста и заголовков */
+    
+         th {
+          text-align: right;
+        }
+
+        .request-detail 
+        {
+          gap: 40px;
+          display: flex;
+          flex-wrap: wrap;
+        }
+        .container-request-driver-name
+        {
+          max-width: 240px;
         }
       </style>
     </head>
     <body>
       <div class="container">
-        <h2 class="driver-details__name">Insurance Policy Details</h2>
+        <h2 class="driver-details__name">{{requests.type}}</h2>
         <table>
-          <!-- Header for Insurance Policy -->
-          <thead>
             <tr>
-              <th colspan="3" class="policy-info">
-                Insurance Policy Information
+              <th colspan="4" class="policy-info">
+                Данные полиса
               </th>
-              <th rowspan="2">
+              <th rowspan="2" colspan="3" class="policy-info">
                 Срок действия
               </th>
-              <th> Начало </th>
-              <th> Конец</th>
+              <th> Начало:</th>
+              <th>Конец:</th>
             </tr>
-            <tr> <th>Номер</th>
-                 <th>Марка</th>
-                 <th>Номер</th>
-                 <th>Номер</th>
-                 <th>Номер</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th>Policy Series</th>
-              <td colspan="2">1234</td>
-              
+            <tr> 
+                <th>Номер:</th>
+              <td>{{requests.certificate_number}}</td>
+                 <th>Серия:</th>
+                 <td>{{requests.certificate_series}}</td>
+                 <td class='date-info'>{{requests.date_begin}}</td>
+                  <td class='date-info'>{{requests.date_end}}</td>
             </tr>
             <tr>
-              <th>Policy Number</th>
-              <td colspan="2">567890</td>
+              <th colspan="9" class="policy-info">
+                Данные автомобиля
+              </th> 
             </tr>
             <tr>
-              <th>Valid From</th>
-              <td>01/01/2024</td>
-              <th>Valid To</th>
-              <td>01/01/2025</td>
-            </tr>
-            <tr>
-              <th>Vehicle Number</th>
-              <td>AB123CD</td>
-              <th>Vehicle Make</th>
-              <td>Toyota Camry</td>
-            </tr>
-          </tbody>
+              <th>Марка:</th>
+              <td>{{requests.car_brand}} </td>
+              <th>Модель:</th>
+              <td>{{requests.car_model}}</td>
+              <td></td>
+              <th>Номер:</th>
+              <td>{{requests.car_number}}</td>
+              <th>Регион:</th>
+              <td>{{requests.car_region}}</td>
+            </tr>   
         </table>
-  
         <h2 class="driver-details__name">Список водителей</h2>
-        <table>
-          <!-- Header for Drivers -->
-          <thead>
-            <tr class="driver-header">
-              <th>Driver Name</th>
-              <th>License Number</th>
-              <th>License Expiry</th>
-              <th>Experience (Years)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="driver-row">
-              <td>John Doe</td>
-              <td>123456789</td>
-              <td>10/12/2025</td>
-              <td>5</td>
-            </tr>
-            <tr>
-              <td>Jane Smith</td>
-              <td>987654321</td>
-              <td>22/07/2027</td>
-              <td>10</td>
-            </tr>
-            <tr class="driver-row">
-              <td>Michael Johnson</td>
-              <td>456789123</td>
-              <td>15/03/2026</td>
-              <td>7</td>
-            </tr>
-          </tbody>
-        </table>
+    <div >
+    {% for driver in drivers_request %}
+    <div class="request-detail">
+      
+        <div class="driver-details__image">
+          <img src="{{driver.image}}" />
+        </div>
+        <div class="container-request-driver-name">
+          <h2 class="driver-details__name">ФИО водителя</h2>
+          <p class="driver-details__experience">{{ driver.name }}</p>
+        </div>
+        <div>
+          <h2 class="driver-details__name">Номер удостоверения </h2>
+          <p class="driver-details__certificate_number">{{ driver.certificate_number }}</p>
+        </div>
+    </div>
+    <hr />
+    {% endfor %}
+  </div>
       </div>
     </body>
-    </div>
-  
+  </div>
 </div>
 
 <!-- Итог и кнопки оформления -->
 
 {% endblock body %}
 
-<!-- <div class="basket-header">
-    <h2>ОСАГОewrtyhyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy</h2>
-    <div class="basket-summary row">
-        <div class="col-6">
-          <h4>Итого: <strong>{{ total_price }} ₽</strong></h4>
-        </div>
-        <div class="col-6 text-right">
-           <button type="button" class="btn btn-primary btn-lg">
-            Оформить заказ
-          </button>
-        </div> 
-  </div>  -->
-
-<!-- <div class="basket-summary row">
-    <div class="col-6">
-      <h4>Итого: <strong>{{ total_price }} ₽</strong></h4>
-    </div>
-    <div class="col-6 text-right">
-      <button type="button" class="search-button">
-        Оформить заказ
-      </button>
-    </div>
-  </div> -->
-<!-- Начало цикла по элементам корзины -->
-<!-- <div class="basket-items">
-    {% for basket in user_baskets %}
-    <div class="basket-item row align-items-center">
-      Изображение товара
-      <div class="col-lg-2 col-md-3 col-sm-4 basket-item-image">
-        {% if basket.dish.image %}
-        <img src="C:\Users\dimar\Downloads\5283021.png" class="img-fluid" />
-        {% else %} 
-        <img src="" alt="Нет изображения" class="img-fluid" />
-        {% endif %}
-      </div>
-
-      Детали товара
-      <div class="col-lg-4 col-md-5 col-sm-8 basket-item-details">
-        <h5 class="item-name">{{ basket.dish.name }}</h5>
-        <p class="item-price">{{ basket.dish.sell_price }} ₽ за штуку</p>
-      </div>
-
-      Управление количеством
+<!-- Управление количеством
       <div class="col-lg-3 col-md-4 col-sm-6 basket-item-quantity">
         <div class="input-group">
           <span class="input-group-btn">
@@ -214,23 +173,45 @@
             </button>
           </span>
         </div>
-      </div>
+      </div> -->
 
-      Общая сумма по товару
+      <!-- Общая сумма по товару
       <div class="col-lg-2 col-md-2 col-sm-6 basket-item-total">
         <p class="item-total"><strong>{{ basket.dishes_price }} ₽</strong></p>
-      </div>
+      </div> -->
 
-      Удалить товар из корзины
+      <!-- Удалить товар из корзины
       <div class="col-lg-1 col-md-1 col-sm-2 basket-item-remove">
         <a href="" class="remove-from-basket" data-basket-id="">
           {% csrf_token %}
           <img src="" alt="Удалить" class="delete-icon" />
         </a>
-      </div>
+      </div> -->
+
+<!-- <div class="basket-header">
+    <h2>ОСАГОewrtyhyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy</h2>
+    <div class="basket-summary row">
+        <div class="col-6">
+          <h4>Итого: <strong>{{ total_price }} ₽</strong></h4>
+        </div>
+        <div class="col-6 text-right">
+           <button type="button" class="btn btn-primary btn-lg">
+            Оформить заказ
+          </button>
+        </div> 
+  </div>  -->
+
+<!-- <div class="basket-summary row">
+    <div class="col-6">
+      <h4>Итого: <strong>{{ total_price }} ₽</strong></h4>
     </div>
-    <hr />
-    {% endfor %}
+    <div class="col-6 text-right">
+      <button type="button" class="search-button">
+        Оформить заказ
+      </button>
+    </div>
   </div> -->
+<!-- Начало цикла по элементам корзины -->
+
 
 <!-- Итого по корзине -->

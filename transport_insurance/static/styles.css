@@ -53,18 +53,21 @@ body {
   padding: 0 20px;
 }
 .header__button {
-  background-color: #002f87;
+  display: inline-block;
+  /* cursor: pointer; Курсор в виде указателя при наведении */
+  text-decoration: none;
   color: #ffffff;
+  background-color: #002f87;
   border: none;
   padding: 10px 20px;
-  cursor: pointer;
   font-size: 14px;
   border-radius: 15px; /* Закругленные края кнопки */
-  transition: background-color 0.3s;
+  transition: background-color 0.3s ease;
 }
 
 .header__button:hover {
-  background-color: #0056b3; /* Изменение цвета при наведении */
+  background-color: #0056b3;
+  color: #ffffff; /* Изменение цвета при наведении */
 }
 
 .header .logo img {
@@ -82,7 +85,7 @@ body {
 
 .main-nav__list li a {
   text-decoration: none; /* Убираем подчеркивание ссылок */
-  color: #000000; /* Цвет текста ссылок */
+  /* color: #000000; Цвет текста ссылок */
   font-size: 16px;
   padding: 10px 15px; /* Внутренние отступы ссылок */
   display: block;
@@ -97,15 +100,15 @@ body {
 }
 
 .main-nav a {
-  color: #333;
+  /* color: #333; */
   text-decoration: none;
   font-size: 14px;
   transition: color 0.3s;
 }
 
-.main-nav a:hover {
-  color: #005bbb; /* Изменение цвета при наведении */
-}
+/* .main-nav a:hover {
+  color: #005bbb; Изменение цвета при наведении 
+} */
 .search-block {
   display: flex;
   justify-content: center;
@@ -146,31 +149,6 @@ body {
 .search-button:hover {
   background-color: #0056b3;
 }
-/* Стили для main */
-/* .hero {
-  background-image: url("hero-bg.jpg"); 
-  background-size: cover;
-  background-position: center;
-  color: #ffffff;
-  text-align: center;
-  padding: 60px 20px;
-}
-
-.hero__title {
-  font-size: 48px;
-  margin-bottom: 20px;
-}
-
-.hero__description {
-  font-size: 20px;
-  margin-bottom: 30px;
-}
-
-
-
-.hero__button:hover {
-  background-color: #e5941e; 
-} */
 
 .main__container {
   display: flex;
@@ -240,7 +218,7 @@ body {
   padding: 10px 20px; /* Внутренние отступы */
   border-radius: 15px; /* Округление углов */
   font-size: 16px; /* Размер шрифта */
-  font-weight: normal; /* Жирное начертание шрифта */
+  font-weight: normal;
   cursor: pointer; /* Курсор в виде указателя при наведении */
   text-decoration: none; /* Убирает подчеркивание у ссылки */
   transition: background-color 0.3s, color 0.3s;
@@ -375,175 +353,3 @@ ingos-logo a {
   color: #0000ff; /* Синий цвет шрифта */
   text-decoration: none; /* Убираем подчеркивание ссылок */
 }
-
-.modal-basket {
-  /* background-color: #ffffff; Светлый фон */
-  /* padding: 20px;
-  
-  
-  max-width: 1200px;
-  margin: 0 auto;
-  align-items: center;
-  justify-content: space-between;
-  
-  */
-  /* margin-top: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  border-radius: 25px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  max-width: 1100px; */
-  background-color: #fff;
-  border-radius: 20px;
-  padding: 10px;
-  max-width: 1000px;
-  width: 100%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  transition: box-shadow 0.3s ease-in-out;
-}
-
-.basket-header {
-  margin-bottom: 20px;
-  text-align: center;
-  width: 1100px;
-}
-
-.basket-header h2 {
-  font-size: 28px;
-  font-weight: bold;
-  color: #002f87;
-  /* Основной синий цвет */
-}
-
-.basket-items {
-  margin-bottom: 30px;
-}
-
-/* Стили для каждого элемента корзины */
-.basket-item {
-  padding: 15px 0;
-  border-bottom: 1px solid #dfe1e5; /* Линия разделения */
-}
-
-.basket-item:last-child {
-  border-bottom: none;
-}
-
-.basket-item-image img {
-  width: 100%;
-  max-width: 80px; /* Ограничение ширины для изображения */
-  height: auto;
-  border-radius: 5px;
-}
-
-/* Стили для описания товара */
-.basket-item-details h5 {
-  font-size: 18px;
-  font-weight: 500;
-  margin-bottom: 5px;
-  color: #333;
-}
-
-.basket-item-details .item-price {
-  font-size: 16px;
-  color: #666;
-}
-
-/* Стили для управления количеством */
-.basket-item-quantity .input-group {
-  max-width: 150px;
-  margin: 0 auto;
-}
-
-.basket-item-quantity .btn {
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  font-size: 16px;
-  line-height: 1;
-  text-align: center;
-}
-
-.basket-item-quantity .form-control {
-  text-align: center;
-  font-size: 16px;
-}
-
-/* Сумма по товару */
-.basket-item-total .item-total {
-  font-size: 18px;
-  font-weight: bold;
-  color: #002f87;
-}
-
-/* Стили для удаления */
-.basket-item-remove {
-  text-align: center;
-}
-
-.basket-item-remove .delete-icon {
-  width: 20px;
-  cursor: pointer;
-  filter: grayscale(100%); /* Черно-белая иконка */
-  transition: filter 0.3s;
-}
-
-.basket-item-remove .delete-icon:hover {
-  filter: none; /* Снятие эффекта при наведении */
-}
-
-/* Стили для итоговой части */
-.basket-summary {
-  padding: 20px 0;
-  border-top: 1px solid #dfe1e5; /* Линия разделения сверху */
-}
-
-.basket-summary h4 {
-  font-size: 20px;
-  font-weight: bold;
-  color: #002f87;
-}
-
-.basket-summary .btn-primary {
-  background-color: #002f87;
-  border-color: #002f87;
-  font-size: 18px;
-  padding: 10px 20px;
-  border-radius: 5px;
-}
-
-.basket-summary .btn-primary:hover {
-  background-color: #0040a3;
-  border-color: #0040a3;
-}
-
-/* Стили для footer */
-/* .footer {
-  background-color: #333;
-  color: #ffffff;
-  padding: 20px 0;
-}
-
-.footer__text {
-  font-size: 14px;
-  text-align: center;
-}
-
-.footer-nav ul {
-  list-style: none;
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  padding-top: 10px;
-  margin: 0;
-}
-
-.footer-nav a {
-  color: #ffffff;
-  text-decoration: none;
-  font-size: 14px;
-} */

@@ -5,77 +5,84 @@
 <div class="services">
     <div class="driver-details">
       <style>
-        table {
-          width: 100%;
-          border-radius: 20px;
-          border-collapse: separate; /* Важно для округления углов */
-          border-spacing: 0;
-          margin: 20px 0;
-          font-size: 18px;
-          /* text-align: left; */
-          border-spacing: 10px;
-        }
-      
-        th, td {
-          padding: 12px 0px;
-          border-radius: 10px;
-          border: 1px solid #ddd;
-          border: none; 
-          width: auto;
-         
-        }
-      
-        th {
-          /* background-color: #f2f2f2; */
-          font-weight: bold;
-          color: #333;
-        }
-        td {
-          /* background-color: #f2f2f2; */
-          font-weight: normal;
-          color:#666;
-          text-align:left;
-        }
-      
-        .policy-info {
-          background-color: #002f87; /* Цвет как у Ингосстраха */
-          color: white;
-          font-weight: bold;
-          text-align: center;
-        }
-        
-        .date-info {
-          text-align:right;
-          vertical-align:top;
-          padding: 0;
+    .toast-notification {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 150px;
+    padding: 15px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    font-family: "Arial", sans-serif;
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    opacity: 1;
+  }
 
-        }
-  
-        table tr th:first-child, table tr td:first-child {
-          padding-left: 20px;
-        }
-      
-        /* Дополнительные стили для текста и заголовков */
-    
-         th {
-          text-align: right;
-        }
+  /* Скрытие уведомления */
+  .toast-notification.hide {
+    transform: translateX(100%);
+    opacity: 0;
+  }
 
-        .request-detail 
-        {
-          gap: 40px;
-          display: flex;
-          flex-wrap: wrap;
-        }
-        .container-request-driver-name
-        {
-          max-width: 240px;
-        }
+  /* Внутреннее содержимое уведомления */
+  .toast-content {
+    display: flex;
+    align-items: center;
+  }
+
+  /* Иконка уведомления */
+  .toast-icon {
+    font-size: 24px;
+    color: #28a745; /* Зеленая галочка для активного статуса */
+    margin-right: 10px;
+  }
+
+  /* Текст сообщения */
+  .toast-message {
+    display: flex;
+    flex-direction: column;
+  }
+
+
+  /* Метка статуса */
+  .status-label {
+    font-size: 14px;
+    font-weight: bond;
+    padding: 5px 10px;
+    border-radius: 15px;
+    color: white;
+  }
+
+  /* Статус "Активен" */
+  .status-label.active {
+    background-color: #28a745;/*  Зеленый цвет для активного статуса */
+  }
+/*
+  Статус "Истек"
+  .status-label.expired {
+    background-color: #dc3545; Красный цвет для истекшего статуса
+  }
+ 
+  Статус "Ожидает"
+  .status-label.pending {
+    background-color: #ffc107; Желтый цвет для ожидающего статуса
+  }
+
+  Кнопка закрытия уведомления
+  .toast-close {
+    font-size: 20px;
+    cursor: pointer;
+    color: #888;
+  } */
       </style>
     </head>
     <body>
       <div class="container">
-        <h2 class="driver-details__name">{{requests.type}}</h2>
+        <h2 class="driver-details__name">{{ insurance.type}}</h2>
         <table>
             <tr>
               <th colspan="4" class="policy-info">
@@ -84,16 +91,17 @@
               <th rowspan="2" colspan="3" class="policy-info">
                 Срок действия
               </th>
+
               <th> Начало:</th>
               <th>Конец:</th>
             </tr>
             <tr> 
                 <th>Номер:</th>
-              <td>{{requests.certificate_number}}</td>
+              <td>{{ insurance.certificate_number}}</td>
                  <th>Серия:</th>
-                 <td>{{requests.certificate_series}}</td>
-                 <td class='date-info'>{{requests.date_begin}}</td>
-                  <td class='date-info'>{{requests.date_end}}</td>
+                 <td>{{ insurance.certificate_series}}</td>
+                 <td class='date-info'>{{ insurance.date_begin}}</td>
+                  <td class='date-info'>{{ insurance.date_end}}</td>
             </tr>
             <tr>
               <th colspan="9" class="policy-info">
@@ -102,36 +110,54 @@
             </tr>
             <tr>
               <th>Марка:</th>
-              <td>{{requests.car_brand}} </td>
+              <td>{{ insurance.car_brand}} </td>
               <th>Модель:</th>
-              <td>{{requests.car_model}}</td>
+              <td>{{ insurance.car_model}}</td>
               <td></td>
               <th>Номер:</th>
-              <td>{{requests.car_number}}</td>
+              <td>{{ insurance.car_number}}</td>
               <th>Регион:</th>
-              <td>{{requests.car_region}}</td>
+              <td>{{ insurance.car_region}}</td>
             </tr>   
         </table>
         <h2 class="driver-details__name">Список водителей</h2>
-    <div >
-    {% for driver in drivers_request %}
-    <div class="request-detail">
+    
+    {% for driver in insurance_drivers %}
+    <div class="insurance-detail">
       
         <div class="driver-details__image">
           <img src="{{driver.image}}" />
         </div>
-        <div class="container-request-driver-name">
-          <h2 class="driver-details__name">ФИО водителя</h2>
-          <p class="driver-details__experience">{{ driver.name }}</p>
+
+        <div class="insurance-detail-driver__info">
+          <div class="container-insurance-driver-name">
+            <h2 class="driver-details__name">ФИО водителя</h2>
+            <p class="driver-details__experience">{{driver.name}}</p> 
+          </div>
+
+          <div class="container-insurance-driver-name">
+            <h2 class="driver-details__name">Номер удостоверения</h2>
+            <p class="driver-details__certificate_number">{{driver.certificate_number}}</p>
+            </div>
+            {% if driver.id == insurance.owner %}
+            <div class="toast-notification">
+              <div class="toast-content">
+                <span class="toast-icon">&#x2714;</span>
+                <div class="toast-message">
+                  <!-- <span class="owner-name">Иван Иванов</span> -->
+                  <span class="status-label active">Владелец</span>
+            </div>
+            
+          </div>
+              
+            </div>
+            {% endif %}
         </div>
-        <div>
-          <h2 class="driver-details__name">Номер удостоверения </h2>
-          <p class="driver-details__certificate_number">{{ driver.certificate_number }}</p>
-        </div>
+        
     </div>
     <hr />
     {% endfor %}
-  </div>
+  
       </div>
     </body>
   </div>

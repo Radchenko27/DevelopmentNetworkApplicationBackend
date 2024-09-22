@@ -165,18 +165,20 @@ body {
   font-weight: bold;
   color: #002f87;
 }
+
 /* Стили для services */
 .services {
   padding: 10px 200px;
 }
 
 .services__container {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(3, 1fr); /* 3 колонки */
   gap: 20px;
 }
 
-.service-item {
+.driver-item {
   background-color: #ffffff;
   padding: 20px;
   border-radius: 20px;
@@ -186,11 +188,11 @@ body {
   transition: box-shadow 0.5s ease-in-out;
 }
 
-.service-item:hover {
+.driver-item:hover {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
 }
 
-.service-item__image img {
+.driver-item__image img {
   background-color: #f0f0f0; /* Фон для выделения шапки */
   width: 100%; /* Задает ширину изображения под размер карточки */
   height: 382px;
@@ -199,17 +201,17 @@ body {
   object-fit: cover;
 }
 
-.service-item__title {
+.driver-item__title {
   font-size: 24px;
   margin-bottom: 10px;
 }
 
-.service-item__description {
+.driver-item__description {
   font-size: 14px;
   color: #666;
 }
 
-.service-item__button {
+.driver-item__button {
   display: inline-block; /* Делает ссылку похожей на блок, как кнопка */
   text-align: center; /* Выравнивание текста по центру */
   background-color: #ffffff; /* Белый фон кнопки */
@@ -226,7 +228,7 @@ body {
   margin: 0px;
 }
 
-.service-item__button:hover {
+.driver-item__button:hover {
   background-color: #0000ff; /* Синий фон при наведении */
   color: #ffffff; /* Белый цвет шрифта при наведении */
 }
@@ -320,6 +322,78 @@ body {
   .driver-details__info {
     text-align: center;
   }
+}
+
+table {
+  width: 100%;
+  border-radius: 20px;
+  border-collapse: separate; /* Важно для округления углов */
+  border-spacing: 0;
+  margin: 20px 0;
+  font-size: 18px;
+  /* text-align: left; */
+  border-spacing: 10px;
+}
+
+th,
+td {
+  padding: 12px 0px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  border: none;
+  width: auto;
+}
+
+th {
+  /* background-color: #f2f2f2; */
+  font-weight: bold;
+  color: #333;
+}
+td {
+  /* background-color: #f2f2f2; */
+  font-weight: normal;
+  color: #666;
+  text-align: left;
+}
+
+.policy-info {
+  background-color: #002f87; /* Цвет как у Ингосстраха */
+  color: white;
+  font-weight: bold;
+  text-align: center;
+}
+
+.date-info {
+  text-align: right;
+  vertical-align: top;
+  padding: 0;
+}
+
+table tr th:first-child,
+table tr td:first-child {
+  padding-left: 20px;
+}
+
+/* Дополнительные стили для текста и заголовков */
+
+th {
+  text-align: right;
+}
+
+.insurance-detail {
+  gap: 40px;
+  display: flex;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.insurance-detail-driver__info {
+  display: flex;
+  flex: 1;
+}
+.container-insurance-driver-name {
+  width: 265px;
+  height: 100px;
 }
 
 ingos-logo {

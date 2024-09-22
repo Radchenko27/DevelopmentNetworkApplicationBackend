@@ -56,18 +56,10 @@ drivers = [
         'image': 'http://127.0.0.1:9000/drivers/6.jpg',
         'characteristics': 'Андрей Сергеевич – опытный водитель, работающий в различных областях автотранспортной индустрии.'
     },
-    {
-        'id': 1,
-        'name': 'Радченко Дмитрий Сергеевич',
-        'experience': '1 год',
-        'certificate_number': '32 12 344234',
-        'license': 'B, M',
-        'image': 'http://127.0.0.1:9000/drivers/1.png',
-        'characteristics': 'Дмитрий Сергеевич – опытный водитель, работающий в различных областях автотранспортной индустрии.'
-    },
+    
 ]
 
-requests =  {
+insurances = [{
         'id':1,
         'type': "ОСАГО",
          'certificate_number':1234,
@@ -78,29 +70,31 @@ requests =  {
          'car_model': 'Camry',
          'car_number':'А001МР',
          'car_region': 77,
-
-
+         'items':[1, 2, 3],
+         'owner': 1,
     }
+]
 
-request_to_drivers = {
-    1: [1, 2, 3],
-    # другие привязки
-}
+# insurance_to_drivers = {
+#     1: [1, 2, 3],
+#     # другие привязки
+# }
 
 
 def drivers_list(request):
     # features = FeatureRequest.objects.all()
     drivers_list = drivers
-    search = request.GET.get('search', "")
+    search = request.GET.get('driver_name', "")
     if search:
         drivers_list = [driver for driver in drivers_list if search.lower() in driver['name'].lower()]
     
-    id_request = 1
-    quantity_of_drivers = len(request_to_drivers[id_request])
+    id_insurance = 1
+    # quantity_of_drivers = len(insurance_to_drivers[id_insurance])
+    quantity_of_drivers = next((len(insurance['items']) for insurance in insurances  if insurance['id'] == id_insurance and insurance.get('items', 0) ), 0)
     return render(request, 'drivers/drivers_list.html', {
         'drivers_list': drivers_list,
         'quantity_of_drivers':quantity_of_drivers,
-        'id_request': id_request,
+        'id_insurance': id_insurance,
     })
 
 
@@ -109,20 +103,18 @@ def drivers_list(request):
 def driver_detail(request, id_driver):
 
     driver = next((dr for dr in drivers if dr['id'] == id_driver ), None)
-
     if not driver:
         return get_object_or_404(driver)
     # bug = get_object_or_404(BugReport, id=bug_id)
     return render(request, 'drivers/driver_detail.html', {'driver': driver})
 
 
-def request_detail(request, id_request):
-    # bug = get_object_or_404(BugReport, id=bug_id)
-    # drivers_ids = request_to_drivers.get(id_request, [])
-
-    drivers_list = drivers
-    drivers_request = [driver for driver in drivers_list ]
-    return render(request, 'drivers/request_detail.html', {
-        'drivers_request': drivers_request,
-        'requests': requests,
+def insurance_detail(request, id_insurance):
+   
+    insurance= next((insurance for insurance in insurances if insurance['id'] == id_insurance), None)
+    ids_of_drivers = insurance.get('items', [])
+    insurance_drivers = [driver for driver in drivers if driver['id'] in ids_of_drivers]
+    return render(request, 'drivers/insurance_detail.html', {
+        'insurance_drivers': insurance_drivers,
+        'insurance':  insurance,
     })

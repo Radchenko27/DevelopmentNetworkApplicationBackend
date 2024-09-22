@@ -5,13 +5,13 @@
   <li>
     <div class="search-block">
     <form method="GET" action="{% url 'drivers_list' %}" class="search-form">
-      <input type="text" class="search-input" name='search' placeholder="Поиск по ФИО" value="{{ request.GET.search }}" />
+      <input type="text" class="search-input" name='driver_name' placeholder="Поиск по ФИО" value="{{ request.GET.driver_name }}" />
       <button type="submit" class="search-button"> Искать</button>
     </form>
   </div>
   </li>
   <li>
-  <a class="header__button" href="{% url 'request_detail' id_request %}" >Текущая страховка | Кол-во водителей: {{quantity_of_drivers}}</a>
+  <a class="header__button" href="{% url 'insurance_detail' id_insurance %}" >Текущая страховка | Кол-во водителей: {{quantity_of_drivers}}</a>
   </li> 
 {% endblock header %}
 
@@ -23,15 +23,15 @@
   <section class="services">
     <div class="services__container">
       {% for driver in drivers_list %}
-        <div class="service-item">
-            <div class="service-item__image">
+        <div class="driver-item">
+            <div class="driver-item__image">
               <img src="{{driver.image}}" />
             </div>
-            <h2 class="service-item__title">{{driver.name}}</h2>
-            <p class="service-item__description">
+            <h2 class="driver-item__title">{{driver.name}}</h2>
+            <p class="driver-item__description">
               Стаж вождения: {{driver.experience}}
             </p>
-            <a class="service-item__button" href="{% url 'driver_detail' driver.id %}">Подробнее</a >
+            <a class="driver-item__button" href="{% url 'driver_detail' driver.id %}">Подробнее</a >
         </div>
       
      {% endfor %}
@@ -42,39 +42,3 @@
 {% endblock body %}
 
 
-<!-- <div class="service-item">
-        <div class="service-item__image">
-          <img src="C:\Users\dimar\Downloads\Без названия.png" />
-        </div>
-        <h2 class="service-item__title">Иванов Петр Александрович</h2>
-        <p class="service-item__description">
-          Страхование гражданской ответственности.
-        </p>
-      </div> -->
-      <!-- <div class="service-item">
-        <div class="service-item__image">
-          <img src="C:\Users\dimar\Downloads\kasko.svg" />
-        </div>
-        <h2 class="service-item__title">Зеленая карта</h2>
-        <p class="service-item__description">
-          Международное автострахование для поездок за границу.
-        </p>
-      </div>
-      <div class="service-item">
-        <h2 class="service-item__title">КАСКО</h2>
-        <p class="service-item__description">
-          Защитите свой автомобиль от любых рисков.
-        </p>
-      </div>
-      <div class="service-item">
-        <h2 class="service-item__title">ОСАГО</h2>
-        <p class="service-item__description">
-          Страхование гражданской ответственности.
-        </p>
-      </div>
-      <div class="service-item">
-        <h2 class="service-item__title">Зеленая карта</h2>
-        <p class="service-item__description">
-          Международное автострахование для поездок за границу.
-        </p>
-      </div> -->

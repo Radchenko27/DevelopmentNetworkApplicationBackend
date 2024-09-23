@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+import logging.config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,9 +27,9 @@ SECRET_KEY = 'django-insecure-ix@t&46@(p#rr9(gj&389f*inid_a_or7l0dh7c_$q!vd(1r^$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1',]
 
-
+# DATABASE_URL=postgres://username:password@localhost:5432/dbname
 # Application definition
 
 INSTALLED_APPS = [
@@ -78,9 +79,21 @@ WSGI_APPLICATION = 'transport_insurance.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': BASE_DIR / 'db.sqlite3',
+    # }
+    'default':{
+        'ENGINE':'django.db.backends.postgresql',
+        'NAME': 'transport_insurance',
+        "USER": 'admin_user',
+        "PASSWORD": 'admin_user',
+        "HOST": 'localhost',
+        "PORT": '5432',
+        'OPTIONS': {
+            'client_encoding': 'UTF8',  # Убедитесь, что кодировка совпадает с настройками вашей базы данных
+        },
+
     }
 }
 
@@ -107,7 +120,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+# LANGUAGE_CODE = 'en-us'
+
+LANGUAGE_CODE = 'ru'
 
 TIME_ZONE = 'UTC'
 
@@ -125,6 +140,7 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',  # Общая директорияpython manage.py dumpdata goods.Categories --output fixtures/goods/categories.json
 
 ]
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

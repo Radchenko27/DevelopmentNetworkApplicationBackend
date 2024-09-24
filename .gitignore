@@ -2,3 +2,4 @@
 /transport_insurance/db.sqlite3
 /transport_insurance/drivers/__pycache__
 /transport_insurance/transport_insurance/__pycache__
+/transport_insurance/drivers/migrations

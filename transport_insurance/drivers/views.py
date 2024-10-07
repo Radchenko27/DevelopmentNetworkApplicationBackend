@@ -1,120 +1,128 @@
-from django.shortcuts import render,  get_object_or_404
+from django.shortcuts import render,  get_object_or_404, redirect
+from .models import Driver, Insurance, Driver_Insurance
+from django.db import models, connection
+from django.contrib.auth.decorators import login_required
+from django.http import Http404
 
-# Create your views here.
-drivers = [
-    {
-        'id': 1,
-        'name': 'Радченко Дмитрий Сергеевич',
-        'experience': '1 год',
-        'certificate_number': '32 12 344234',
-        'license': 'B, M',
-        'image': 'http://127.0.0.1:9000/drivers/1.png',
-        'characteristics': 'Дмитрий Сергеевич – опытный водитель, работающий в различных областях автотранспортной индустрии.'
-    },
-    {
-        'id': 2,
-        'name': 'Самошников Василий Александрович',
-        'experience': '6 лет',
-        'certificate_number': '67 34 456377',
-        'license': 'B, C, M',
-        'image': 'http://127.0.0.1:9000/drivers/2.png',
-        'characteristics': 'Василий Александрович – опытный водитель, работающий в различных областях автотранспортной индустрии.'
-    },
-    {
-        'id': 3,
-        'name': 'Кириенко Никита Степанович',
-        'experience': '9 лет',
-        'certificate_number': '27 76  567887',
-        'license': 'A, B, C, M',
-        'image': 'http://127.0.0.1:9000/drivers/3.jpg',
-        'characteristics': 'Никита Степанович – опытный водитель, работающий в различных областях автотранспортной индустрии.'
-    },
-    {
-        'id': 4,
-        'name': 'Петров Сергей Олегович',
-        'experience': '7 год',
-        'certificate_number': '67 32 356345',
-        'license': 'B, C, D, M',
-        'image': 'http://127.0.0.1:9000/drivers/4.jpg',
-        'characteristics': 'Сергей Олегович – опытный водитель, работающий в различных областях автотранспортной индустрии.'
-    },
-    {
-        'id': 5,
-        'name': 'Размаринов Владимир Сергеевич',
-        'experience': '15 лет',
-        'certificate_number': '98 78 305678',
-        'license': 'B, M',
-        'image': 'http://127.0.0.1:9000/drivers/5.jpg',
-        'characteristics': 'Владимир Сергеевич – опытный водитель, работающий в различных областях автотранспортной индустрии.'
-    },
-    {
-        'id': 6,
-        'name': 'Козлов Андрей Сергеевич',
-        'experience': '10 лет',
-        'certificate_number': '33 78 567898',
-        'license': 'A, B, C, D, M',
-        'image': 'http://127.0.0.1:9000/drivers/6.jpg',
-        'characteristics': 'Андрей Сергеевич – опытный водитель, работающий в различных областях автотранспортной индустрии.'
-    },
-    
-]
+# Create your views here
 
-insurances = [{
-        'id':1,
-        'type': "ОСАГО",
-         'certificate_number':1234,
-         'certificate_series': 567890,
-         'date_begin': '01.01.2024',
-         'date_end': '01.01.2025',
-         'car_brand':  'Toyota' ,
-         'car_model': 'Camry',
-         'car_number':'А001МР',
-         'car_region': 77,
-         'items':[1, 2, 3],
-         'owner': 1,
-    }
-]
-
-# insurance_to_drivers = {
-#     1: [1, 2, 3],
-#     # другие привязки
-# }
 
 
 def drivers_list(request):
     # features = FeatureRequest.objects.all()
-    drivers_list = drivers
-    search = request.GET.get('driver_name', "")
-    if search:
-        drivers_list = [driver for driver in drivers_list if search.lower() in driver['name'].lower()]
+    # drivers_list = drivers
     
-    id_insurance = 1
-    # quantity_of_drivers = len(insurance_to_drivers[id_insurance])
-    quantity_of_drivers = next((len(insurance['items']) for insurance in insurances  if insurance['id'] == id_insurance and insurance.get('items', 0) ), 0)
+    driver_name = request.GET.get('driver_name', '')
+    drivers_list = Driver.objects.filter(status='active')
+
+    current_insurance = None
+
+    if request.user.is_authenticated:
+        
+        current_insurance = Insurance.objects.filter(creator=request.user, status='draft').first()
+         # Если черновика нет, создаем новый
+        # if current_insurance is None:
+        #     current_insurance = Insurance.objects.create(creator=request.user, status='draft')
+        #     print("Создан новый черновик:", current_insurance.id)
+        
+    if driver_name:
+         drivers_list = drivers_list.filter(name__icontains=driver_name)
+
+    quantity_of_drivers = Driver_Insurance.objects.filter(insurance=current_insurance).aggregate(total_quantity=models.Count("id"))['total_quantity'] or 0 if current_insurance else 0
+    
     return render(request, 'drivers/drivers_list.html', {
         'drivers_list': drivers_list,
         'quantity_of_drivers':quantity_of_drivers,
-        'id_insurance': id_insurance,
+        'id_insurance': current_insurance.id if current_insurance else None,
     })
-
 
 
 
 def driver_detail(request, id_driver):
 
-    driver = next((dr for dr in drivers if dr['id'] == id_driver ), None)
-    if not driver:
-        return get_object_or_404(driver)
-    # bug = get_object_or_404(BugReport, id=bug_id)
+    driver= get_object_or_404(Driver, id=id_driver)
+
     return render(request, 'drivers/driver_detail.html', {'driver': driver})
 
 
+
+@login_required
+def add_driver_to_insurance(request, id_driver):
+    # Получаем услугу по её ID или возвращаем 404, если услуга не найдена
+    driver = get_object_or_404(Driver, id=id_driver)
+
+    # Получаем или создаем черновик заказа для текущего пользователя
+    current_insurance, created_insurance = Insurance.objects.get_or_create(
+        creator=request.user, 
+        status='draft'
+    )
+
+    # Проверяем, есть ли услуга уже в текущем заказе
+    current_driver_insurance, created_driver_insurance = Driver_Insurance.objects.get_or_create(
+        insurance=current_insurance,
+        driver=driver,
+        owner=False,  # Инициализируем количество как 0, если услуги ещё нет
+    )
+
+
+    return redirect('drivers_list')
+
+
+@login_required
 def insurance_detail(request, id_insurance):
-   
-    insurance= next((insurance for insurance in insurances if insurance['id'] == id_insurance), None)
-    ids_of_drivers = insurance.get('items', [])
-    insurance_drivers = [driver for driver in drivers if driver['id'] in ids_of_drivers]
+    
+    selected_insurance = get_object_or_404(Insurance, id=id_insurance, creator=request.user)
+
+    drivers_insurance = Driver_Insurance.objects.filter(insurance=selected_insurance)
+
+    if selected_insurance.status == 'deleted' :# или insurance.status == 'deleted'
+        raise Http404("Страховка недоступна")
+    
+
+    elif not drivers_insurance.exists():
+        return render(request, 'drivers/insurance_detail.html', {
+        'insurance':  selected_insurance,
+        'queryset_drivers_in_insurance': None,
+        'drivers_insurance':None,
+        'is_empty_insurance': True,
+        })
+    
+    queryset_drivers_in_insurance=[driver_insurance.driver for driver_insurance in drivers_insurance ]
+    
     return render(request, 'drivers/insurance_detail.html', {
-        'insurance_drivers': insurance_drivers,
-        'insurance':  insurance,
+        'insurance':  selected_insurance,
+        'queryset_drivers_in_insurance': queryset_drivers_in_insurance,
+        'drivers_insurance': drivers_insurance,
+        'is_empty_insurance': False,
     })
+
+
+@login_required
+def update_insurance_status(request, id_insurance):
+    # Обрабатываем только POST-запросы
+    if request.method == 'POST':
+        action = request.POST.get('action')  # Получаем действие (например, завершить или удалить заказ)
+        # Получаем заказ по ID и проверяем, что он принадлежит текущему пользователю
+        current_insurance = get_object_or_404(Insurance, id=id_insurance, creator=request.user)
+
+        # Открываем прямое соединение с базой данных для выполнения SQL-запросов
+        with connection.cursor() as cursor:
+
+            if action == 'delete':
+                cursor.execute("""
+                    UPDATE insurance
+                    SET status = 'deleted'
+                    WHERE id = %s
+                """, [id_insurance])
+                print(f"Заказ {current_insurance.id} удален.")
+
+                # Здесь не создаем новый черновик, это будет сделано в add_service_to_order_datacenter
+
+                # Перенаправляем на список услуг после удаления заказа
+                return redirect('drivers_list')
+
+    # Если запрос не является POST, возвращаем 404
+    raise Http404("Недопустимый метод запроса")
+
+
+        

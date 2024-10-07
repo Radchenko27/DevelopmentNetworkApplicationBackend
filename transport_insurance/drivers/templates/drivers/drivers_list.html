@@ -1,44 +1,67 @@
-{% extends "base.html" %}
-{% load static %}
-
-{% block header %}
-  <li>
-    <div class="search-block">
+{% extends "base.html" %} {% load static %} {% block header %}
+<li>
+  <div class="search-block">
     <form method="GET" action="{% url 'drivers_list' %}" class="search-form">
-      <input type="text" class="search-input" name='driver_name' placeholder="Поиск по ФИО" value="{{ request.GET.driver_name }}" />
-      <button type="submit" class="search-button"> Искать</button>
+      <input
+        type="text"
+        class="search-input"
+        name="driver_name"
+        placeholder="Поиск по ФИО"
+        value="{{ request.GET.driver_name }}"
+      />
+      <button type="submit" class="search-button">Искать</button>
     </form>
   </div>
-  </li>
-  <li>
-  <a class="header__button" href="{% url 'insurance_detail' id_insurance %}" >Текущая страховка | Кол-во водителей: {{quantity_of_drivers}}</a>
-  </li> 
-{% endblock header %}
-
-{% block body %}
-  <div class="main__container">
-    <h2 class="main_title">Автострахование онлайн</h2>
-  </div>
-  </div>
-  <section class="services">
-    <div class="services__container">
-      {% for driver in drivers_list %}
-        <div class="driver-item">
-            <div class="driver-item__image">
-              <img src="{{driver.image}}" />
-            </div>
-            <h2 class="driver-item__title">{{driver.name}}</h2>
-            <p class="driver-item__description">
-              Стаж вождения: {{driver.experience}}
-            </p>
-            <a class="driver-item__button" href="{% url 'driver_detail' driver.id %}">Подробнее</a >
-        </div>
-      
-     {% endfor %}
+</li>
+<li>
+  {% if user.is_authenticated and id_insurance %}
+  <a class="header__button" href="{% url 'insurance_detail' id_insurance %}">
+    Текущая страховка: {{id_insurance}} | Кол-во водителей:
+    {{quantity_of_drivers}}</a
+  >
+  {% else %}
+  <a href="#" class="header__button" disabled>Текущий заказ недоступен</a>
+  {% endif %}
+</li>
+{% endblock header %} {% block body %}
+<div class="main__container">
+  <h2 class="main_title">Автострахование онлайн</h2>
+</div>
+<section class="services">
+  <div class="services__container">
+    {% for driver in drivers_list %}
+    <div class="driver-item">
+      <div class="driver-item__image">
+        <img src="{{driver.image_url}}" />
+      </div>
+      <div class="driver-item-content">
+        <h2 class="driver-item__title">{{driver.name}}</h2>
+        <p class="driver-item__description">
+          Стаж вождения: {{driver.experience_text}}
+        </p>
+      </div>
+      <div class="driver-item-buttons">
+        <a
+          class="driver-item__button"
+          href="{% url 'driver_detail' driver.id %}"
+          >Подробнее</a
+        >
+        {% if user.is_authenticated %}
+        <!-- <form  method="post" action="{% url 'add_driver_to_insurance' driver.id %}"> -->
+        <form
+          action="{% url 'add_driver_to_insurance' driver.id %}"
+          method="POST"
+        >
+          {% csrf_token %}
+          <button type="submit" class="driver-item__add-button">+</button>
+        </form>
+        {% else %}
+        <button class="driver-item__add-button_1" disabled>+</button>
+        {% endif %}
+      </div>
     </div>
-    
-    
-  </section>
+
+    {% endfor %}
+  </div>
+</section>
 {% endblock body %}
-
-

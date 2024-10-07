@@ -3,7 +3,7 @@
   <h2 class="main_title">Оформление</h2>
 </div>
 <div class="services">
-    <div class="driver-details">
+  <div class="driver-details">
       <style>
     .toast-notification {
     display: flex;
@@ -61,24 +61,8 @@
   .status-label.active {
     background-color: #28a745;/*  Зеленый цвет для активного статуса */
   }
-/*
-  Статус "Истек"
-  .status-label.expired {
-    background-color: #dc3545; Красный цвет для истекшего статуса
-  }
- 
-  Статус "Ожидает"
-  .status-label.pending {
-    background-color: #ffc107; Желтый цвет для ожидающего статуса
-  }
 
-  Кнопка закрытия уведомления
-  .toast-close {
-    font-size: 20px;
-    cursor: pointer;
-    color: #888;
-  } */
-      </style>
+  </style>
     </head>
     <body>
       <div class="container">
@@ -100,8 +84,8 @@
               <td>{{ insurance.certificate_number}}</td>
                  <th>Серия:</th>
                  <td>{{ insurance.certificate_series}}</td>
-                 <td class='date-info'>{{ insurance.date_begin}}</td>
-                  <td class='date-info'>{{ insurance.date_end}}</td>
+                 <td class='date-info'>{{ insurance.date_begin|date:"d-m-Y"}}</td>
+                  <td class='date-info'>{{ insurance.date_end|date:"d-m-Y"}}</td>
             </tr>
             <tr>
               <th colspan="9" class="policy-info">
@@ -122,24 +106,27 @@
         </table>
         <h2 class="driver-details__name">Список водителей</h2>
     
-    {% for driver in insurance_drivers %}
+    {% for driver_insurance in drivers_insurance %}
     <div class="insurance-detail">
       
         <div class="driver-details__image">
-          <img src="{{driver.image}}" />
+          <img src="{{driver_insurance.driver.image_url}}" />
         </div>
 
         <div class="insurance-detail-driver__info">
           <div class="container-insurance-driver-name">
             <h2 class="driver-details__name">ФИО водителя</h2>
-            <p class="driver-details__experience">{{driver.name}}</p> 
+            <p class="driver-details__experience">{{driver_insurance.driver.name}}</p> 
           </div>
-
+          <div class="container-insurance-driver-name">
+            <h2 class="driver-details__name">Стаж вождения</h2>
+            <p class="driver-details__experience">{{driver_insurance.driver.experience_text}}</p> 
+          </div>
           <div class="container-insurance-driver-name">
             <h2 class="driver-details__name">Номер удостоверения</h2>
-            <p class="driver-details__certificate_number">{{driver.certificate_number}}</p>
+            <p class="driver-details__certificate_number">{{driver_insurance.driver.certificate_number}}</p>
             </div>
-            {% if driver.id == insurance.owner %}
+            {% if driver_insurance.owner == True %}
             <div class="toast-notification">
               <div class="toast-content">
                 <span class="toast-icon">&#x2714;</span>
@@ -156,10 +143,23 @@
         
     </div>
     <hr />
-    {% endfor %}
-  
+      {% endfor %}
+      <div class="insurance-detail-driver__info">
+        {% if insurance.status != 'deleted' %}
+              <form method="POST" action="{%  url 'update_insurance_status' insurance.id  %}">
+                {% csrf_token %}
+                    <button type="submit" name="action" value="delete" class="insurance-detail__button-delete">Удалить заказ</button>
+              </form>
+          {% endif %}
+      
+        {% if insurance.status != 'completed' %}
+        <h2 class="driver-details__name">Средний стаж: рассчитывается...</h2>
+        {% else %}
+            <h2 class="driver-details__name">Средний стаж: {{ insurance.average_experience_text }} </h2>
+        {% endif %}
       </div>
-    </body>
+    </div>
+  </body>
   </div>
 </div>
 
@@ -167,77 +167,3 @@
 
 {% endblock body %}
 
-<!-- Управление количеством
-      <div class="col-lg-3 col-md-4 col-sm-6 basket-item-quantity">
-        <div class="input-group">
-          <span class="input-group-btn">
-            <button
-              type="button"
-              class="btn btn-outline-secondary btn-sm decrement"
-              data-basket-id=""
-              data-basket-change-url=""
-            >
-              {% csrf_token %}
-              -
-            </button>
-          </span>
-          <input
-            type="text"
-            class="form-control number"
-            value="{{ basket.quantity }}"
-            readonly
-          />
-          <span class="input-group-btn">
-            <button
-              type="button"
-              class="btn btn-outline-secondary btn-sm increment"
-              data-basket-id=""
-              data-basket-change-url=""
-            >
-              {% csrf_token %}
-              +
-            </button>
-          </span>
-        </div>
-      </div> -->
-
-      <!-- Общая сумма по товару
-      <div class="col-lg-2 col-md-2 col-sm-6 basket-item-total">
-        <p class="item-total"><strong>{{ basket.dishes_price }} ₽</strong></p>
-      </div> -->
-
-      <!-- Удалить товар из корзины
-      <div class="col-lg-1 col-md-1 col-sm-2 basket-item-remove">
-        <a href="" class="remove-from-basket" data-basket-id="">
-          {% csrf_token %}
-          <img src="" alt="Удалить" class="delete-icon" />
-        </a>
-      </div> -->
-
-<!-- <div class="basket-header">
-    <h2>ОСАГОewrtyhyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy</h2>
-    <div class="basket-summary row">
-        <div class="col-6">
-          <h4>Итого: <strong>{{ total_price }} ₽</strong></h4>
-        </div>
-        <div class="col-6 text-right">
-           <button type="button" class="btn btn-primary btn-lg">
-            Оформить заказ
-          </button>
-        </div> 
-  </div>  -->
-
-<!-- <div class="basket-summary row">
-    <div class="col-6">
-      <h4>Итого: <strong>{{ total_price }} ₽</strong></h4>
-    </div>
-    <div class="col-6 text-right">
-      <button type="button" class="search-button">
-        Оформить заказ
-      </button>
-    </div>
-  </div> -->
-<!-- Начало цикла по элементам корзины -->
-
-
-<!-- Итого по корзине -->

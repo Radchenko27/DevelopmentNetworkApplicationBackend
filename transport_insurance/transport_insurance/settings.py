@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
     'drivers',
     
 ]
@@ -75,8 +74,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'transport_insurance.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
     # 'default': {
@@ -89,11 +86,8 @@ DATABASES = {
         "USER": 'admin_user',
         "PASSWORD": 'admin_user',
         "HOST": 'localhost',
-        "PORT": '5432',
-        'OPTIONS': {
-            'client_encoding': 'UTF8',  # Убедитесь, что кодировка совпадает с настройками вашей базы данных
-        },
-
+        "PORT": '5434',
+       
     }
 }
 

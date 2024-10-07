@@ -168,7 +168,8 @@ body {
 
 /* Стили для services */
 .services {
-  padding: 10px 200px;
+  padding: 10px 0px;
+  position: relative;
 }
 
 .services__container {
@@ -176,12 +177,19 @@ body {
   display: grid;
   grid-template-columns: repeat(3, 1fr); /* 3 колонки */
   gap: 20px;
+  /* align-items: center; */
+  justify-content: space-between;
+  margin: 0 auto;
+  max-width: 1200px;
 }
 
 .driver-item {
+  display: flex;
+  flex-direction: column;
   background-color: #ffffff;
   padding: 20px;
   border-radius: 20px;
+  justify-content: space-between;
   text-align: center;
   width: 90%;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -201,9 +209,17 @@ body {
   object-fit: cover;
 }
 
+.driver-item-content {
+  flex-grow: 1;
+  display: flex; /*Включаем Flexbox */
+  flex-direction: column;
+  justify-content: center; /* Центрируем по горизонтали */
+  /* align-items: center;  */
+  place-items: center;
+}
 .driver-item__title {
   font-size: 24px;
-  margin-bottom: 10px;
+  margin-bottom: 0px;
 }
 
 .driver-item__description {
@@ -211,12 +227,20 @@ body {
   color: #666;
 }
 
+.driver-item-buttons {
+  display: flex;
+  text-align: center;
+  justify-content: space-between; /* Размещаем кнопки с отступом друг от друга */
+  gap: 20px; /* Отступ между кнопками */
+  margin-top: 0px; /* Отступ сверху для кнопок */
+}
 .driver-item__button {
+  align-self: flex-end;
   display: inline-block; /* Делает ссылку похожей на блок, как кнопка */
   text-align: center; /* Выравнивание текста по центру */
   background-color: #ffffff; /* Белый фон кнопки */
-  color: #0000ff; /* Синий цвет шрифта */
-  border: 1px solid #0000ff; /* Синяя окантовка */
+  color: #002f87; /* Синий цвет шрифта */
+  border: 1px solid #002f87; /* Синяя окантовка */
   padding: 10px 20px; /* Внутренние отступы */
   border-radius: 15px; /* Округление углов */
   font-size: 16px; /* Размер шрифта */
@@ -229,8 +253,49 @@ body {
 }
 
 .driver-item__button:hover {
-  background-color: #0000ff; /* Синий фон при наведении */
+  background-color: #002f87; /* Синий фон при наведении */
   color: #ffffff; /* Белый цвет шрифта при наведении */
+}
+.driver-item__add-button {
+  display: inline-flex; /* Используем flex для центрирования содержимого */
+  justify-content: center; /* Центрируем по горизонтали */
+  align-items: center; /* Центрируем по вертикали */
+  width: 50px; /* Ширина кнопки */
+  height: 50px; /* Высота кнопки */
+  background-color: #002f87; /* Темно-синий фон (цвет ИНГОССТРАХ) */
+  border: 2px solid #ffffff; /* Белая окантовка */
+  border-radius: 50%; /* Круглая форма */
+  text-decoration: none; /* Убираем подчеркивание */
+  color: #ffffff; /* Белый цвет текста */
+  font-size: 24px; /* Размер шрифта для крестика */
+  font-weight: bold; /* Жирный шрифт */
+  transition: background-color 0.3s, transform 0.3s; /* Плавный переход для фона и трансформации */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Тень для эффекта глубины */
+}
+
+.driver-item__add-button_1 {
+  display: inline-flex; /* Используем flex для центрирования содержимого */
+  justify-content: center; /* Центрируем по горизонтали */
+  align-items: center; /* Центрируем по вертикали */
+  width: 60px; /* Ширина кнопки */
+  height: 50px; /* Высота кнопки */
+  background-color: #002f87; /* Темно-синий фон (цвет ИНГОССТРАХ) */
+  border: 2px solid #ffffff; /* Белая окантовка */
+  border-radius: 50%; /* Круглая форма */
+  text-decoration: none; /* Убираем подчеркивание */
+  color: #ffffff; /* Белый цвет текста */
+  font-size: 24px; /* Размер шрифта для крестика */
+  font-weight: bold; /* Жирный шрифт */
+  transition: background-color 0.3s, transform 0.3s; /* Плавный переход для фона и трансформации */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Тень для эффекта глубины */
+}
+.driver-item__add-button:hover {
+  background-color: #004a8c; /* Темно-синий цвет фона при наведении */
+  transform: scale(1.1); /* Цвет фона при наведении */
+}
+
+.driver-item__add-icon {
+  line-height: 1; /* Выравниваем крестик по центру */
 }
 
 /* Карточка водителя */
@@ -245,6 +310,9 @@ body {
   flex-wrap: wrap;
   gap: 20px;
   transition: box-shadow 0.3s ease-in-out;
+  justify-content: space-between;
+  margin: 0 auto;
+  max-width: 1200px;
 }
 
 .driver-details:hover {
@@ -390,12 +458,35 @@ th {
 .insurance-detail-driver__info {
   display: flex;
   flex: 1;
+  justify-content: space-between;
 }
 .container-insurance-driver-name {
-  width: 265px;
+  width: 220px;
   height: 100px;
 }
 
+.insurance-detail__button-delete {
+  align-self: flex-end;
+  display: inline-block; /* Делает ссылку похожей на блок, как кнопка */
+  text-align: center; /* Выравнивание текста по центру */
+  background-color: #ffffff; /* Белый фон кнопки */
+  color: #b04a4a; /* Синий цвет шрифта */
+  border: 1px solid #b04a4a; /* Синяя окантовка */
+  padding: 10px 20px; /* Внутренние отступы */
+  border-radius: 15px; /* Округление углов */
+  font-size: 16px; /* Размер шрифта */
+  font-weight: normal;
+  cursor: pointer; /* Курсор в виде указателя при наведении */
+  text-decoration: none; /* Убирает подчеркивание у ссылки */
+  transition: background-color 0.3s, color 0.3s;
+  width: 150%;
+  margin: 10px 10px;
+}
+
+.insurance-detail__button-delete:hover {
+  background-color: #b04a4a; /* Синий фон при наведении */
+  color: #ffffff; /* Белый цвет шрифта при наведении */
+}
 ingos-logo {
   display: block; /* Логотип как блоковый элемент */
   width: 150px; /* Ширина блока */

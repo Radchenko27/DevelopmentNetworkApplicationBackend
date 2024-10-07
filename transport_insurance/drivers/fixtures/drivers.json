@@ -1,0 +1,74 @@
+[
+    {
+        "model": "drivers.driver",
+        "pk": 1,
+        "fields": {
+            "name": "Радченко Дмитрий Сергеевич",
+            "experience": 1,
+            "certificate_number": "32 12 344234",
+            "license": "B, M",
+            "image_url": "http://127.0.0.1:9000/drivers/1.png",
+            "characteristics": "Дмитрий Сергеевич – опытный водитель, работающий в различных областях автотранспортной индустрии."
+        }
+    },
+    {
+        "model": "drivers.driver",
+        "pk": 2,
+        "fields": {
+            "name": "Самошников Василий Александрович",
+            "experience": 6,
+            "certificate_number": "67 34 456377",
+            "license": "B, C, M",
+            "image_url": "http://127.0.0.1:9000/drivers/2.png",
+            "characteristics": "Василий Александрович – опытный водитель, работающий в различных областях автотранспортной индустрии."
+        }
+    },
+    {
+        "model": "drivers.driver",
+        "pk": 3,
+        "fields": {
+            "name": "Кириенко Никита Степанович",
+            "experience": 9,
+            "certificate_number": "27 76 567887",
+            "license": "A, B, C, M",
+            "image_url": "http://127.0.0.1:9000/drivers/3.jpg",
+            "characteristics": "Никита Степанович – опытный водитель, работающий в различных областях автотранспортной индустрии."
+        }
+    },
+    {
+        "model": "drivers.driver",
+        "pk": 4,
+        "fields": {
+            "name": "Петров Сергей Олегович",
+            "experience": 7,
+            "certificate_number": "67 32 356345",
+            "license": "B, C, D, M",
+            "image_url": "http://127.0.0.1:9000/drivers/4.jpg",
+            "characteristics": "Сергей Олегович – опытный водитель, работающий в различных областях автотранспортной индустрии."
+        }
+    },
+    {
+        "model": "drivers.driver",
+        "pk": 5,
+        "fields": {
+            "name": "Размаринов Владимир Сергеевич",
+            "experience": 15,
+            "certificate_number": "98 78 305678",
+            "license": "B, M",
+            "image_url": "http://127.0.0.1:9000/drivers/5.jpg",
+            "characteristics": "Владимир Сергеевич – опытный водитель, работающий в различных областях автотранспортной индустрии."
+        }
+    },
+    {
+        "model": "drivers.driver",
+        "pk": 6,
+        "fields": {
+            "name": "Козлов Андрей Сергеевич",
+            "experience": 10,
+            "certificate_number": "33 78 567898",
+            "license": "A, B, C, D, M",
+            "image_url": "http://127.0.0.1:9000/drivers/6.jpg",
+            "characteristics": "Андрей Сергеевич – опытный водитель, работающий в различных областях автотранспортной индустрии."
+        }
+    }
+]

@@ -59,7 +59,8 @@ drivers = [
     
 ]
 
-insurances = [{
+insurances = [
+    {
         'id':1,
         'type': "ОСАГО",
          'certificate_number':1234,
@@ -70,8 +71,22 @@ insurances = [{
          'car_model': 'Camry',
          'car_number':'А001МР',
          'car_region': 77,
-         'items':[1, 2, 3],
-         'owner': 1,
+        #  'items':[1, 2, 3],
+        #  'owner': 1,
+         'items': [
+                        {
+                            'id_driver':1,
+                            'owner':1,
+                        }, 
+                        {
+                            'id_driver':2,
+                            'owner':0,
+                        }, 
+                        {
+                            'id_driver':3,
+                            'owner':0,
+                        },
+                ],
     }
 ]
 
@@ -112,9 +127,13 @@ def driver_detail(request, id_driver):
 def insurance_detail(request, id_insurance):
    
     insurance= next((insurance for insurance in insurances if insurance['id'] == id_insurance), None)
-    ids_of_drivers = insurance.get('items', [])
+    # ids_of_drivers = insurance.get('items', [])
+    items_of_drivers = insurance.get('items', [])
+    ids_of_drivers = [item['id_driver'] for item in items_of_drivers]
     insurance_drivers = [driver for driver in drivers if driver['id'] in ids_of_drivers]
+    # insurance_drivers = [driver for driver in drivers if driver['id'] in ids_of_drivers]
     return render(request, 'drivers/insurance_detail.html', {
         'insurance_drivers': insurance_drivers,
         'insurance':  insurance,
+        'items_of_drivers': items_of_drivers,
     })

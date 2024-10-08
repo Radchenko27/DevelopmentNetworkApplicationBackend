@@ -139,19 +139,20 @@
             <h2 class="driver-details__name">Номер удостоверения</h2>
             <p class="driver-details__certificate_number">{{driver.certificate_number}}</p>
             </div>
-            {% if driver.id == insurance.owner %}
-            <div class="toast-notification">
-              <div class="toast-content">
-                <span class="toast-icon">&#x2714;</span>
-                <div class="toast-message">
-                  <!-- <span class="owner-name">Иван Иванов</span> -->
-                  <span class="status-label active">Владелец</span>
-            </div>
-            
-          </div>
-              
-            </div>
-            {% endif %}
+            {% for item in items_of_drivers %}
+              {% if item.id_driver == driver.id %}
+                {% if item.owner == 1%}
+                  <div class="toast-notification">
+                    <div class="toast-content">
+                      <span class="toast-icon">&#x2714;</span>
+                      <div class="toast-message">
+                        <span class="status-label active">Владелец</span>
+                      </div>
+                    </div>
+                  </div>
+                {% endif %}
+              {% endif %}
+            {% endfor %}
         </div>
         
     </div>

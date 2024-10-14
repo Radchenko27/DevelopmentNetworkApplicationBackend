@@ -4,13 +4,11 @@ from django.db import models, connection
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 
-# Create your views here
+
 
 
 
 def drivers_list(request):
-    # features = FeatureRequest.objects.all()
-    # drivers_list = drivers
     
     driver_name = request.GET.get('driver_name', '')
     drivers_list = Driver.objects.filter(status='active')
@@ -18,12 +16,7 @@ def drivers_list(request):
     current_insurance = None
 
     if request.user.is_authenticated:
-        
         current_insurance = Insurance.objects.filter(creator=request.user, status='draft').first()
-         # Если черновика нет, создаем новый
-        # if current_insurance is None:
-        #     current_insurance = Insurance.objects.create(creator=request.user, status='draft')
-        #     print("Создан новый черновик:", current_insurance.id)
         
     if driver_name:
          drivers_list = drivers_list.filter(name__icontains=driver_name)
@@ -63,7 +56,6 @@ def add_driver_to_insurance(request, id_driver):
         driver=driver,
         owner=False,  # Инициализируем количество как 0, если услуги ещё нет
     )
-
 
     return redirect('drivers_list')
 
@@ -116,7 +108,7 @@ def update_insurance_status(request, id_insurance):
                 """, [id_insurance])
                 print(f"Заказ {current_insurance.id} удален.")
 
-                # Здесь не создаем новый черновик, это будет сделано в add_service_to_order_datacenter
+                
 
                 # Перенаправляем на список услуг после удаления заказа
                 return redirect('drivers_list')

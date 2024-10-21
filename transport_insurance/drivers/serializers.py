@@ -1,12 +1,12 @@
 from rest_framework import serializers
-from .models import AuthUser, Insurance, Driver, Driver_Insurance
+from .models import  Insurance, Driver, Driver_Insurance
 
 
 
-class AuthUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AuthUser
-        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'is_active', 'is_staff', 'is_superuser', 'date_joined']
+# class AuthUserSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = AuthUser
+#         fields = ['id', 'username', 'first_name', 'last_name', 'email', 'is_active', 'is_staff', 'is_superuser', 'date_joined']
 
 
 class InsuranceSerializer(serializers.ModelSerializer):

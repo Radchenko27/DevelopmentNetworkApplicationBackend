@@ -31,7 +31,7 @@ class Driver(models.Model):
                             verbose_name='Категории'
                     )
     experience = models.IntegerField(verbose_name='Опыт работы', validators=[MinValueValidator(0)])
-    image_url = models.URLField(verbose_name='Аватар')
+    image_url = models.URLField(verbose_name='Аватар', blank=True, null=True, default='')
     characteristics = models.TextField(verbose_name='Характеристика')
     status = models.CharField(max_length=10,  choices=STATUS_CHOICES, default='active',verbose_name='Статус')
 

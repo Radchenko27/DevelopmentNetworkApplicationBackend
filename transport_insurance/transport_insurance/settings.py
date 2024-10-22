@@ -148,3 +148,19 @@ AWS_ACCESS_KEY_ID = 'minio'
 AWS_SECRET_ACCESS_KEY = 'minio124'
 AWS_S3_ENDPOINT_URL = 'localhost:9000'
 MINIO_USE_SSL = False
+
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'rest_framework.authentication.BasicAuthentication',
+#         'rest_framework.authentication.SessionAuthentication',
+#     ),
+#     # Другие настройки DRF...
+# }
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ]
+}

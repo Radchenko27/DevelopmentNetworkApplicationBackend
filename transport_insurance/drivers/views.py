@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 from .singleton import get_mock_user, get_mock_user_moderator
 from rest_framework import  status
 from rest_framework.decorators import action, api_view
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .minio import add_pic 
@@ -388,7 +389,7 @@ def update_driver_owner_in_insurance(request, id_insurance, id_driver):
             return Response({'error': 'Добавьте значение передаваемого параметра owner. Водитель по умолчанию уже не являелся владельцом.'}, status=status.HTTP_400_BAD_REQUEST)
         
         
-
+@csrf_exempt
 @api_view(['POST'])
 def register_user(request):
     data = request.data
@@ -406,6 +407,7 @@ def register_user(request):
     return Response({'message': 'Пользователь успешно зарегистрирован'}, status=status.HTTP_201_CREATED)
 
 
+@csrf_exempt
 @api_view(['PUT'])
 def update_user(request, pk):
     user = get_object_or_404(User, id=pk)
@@ -419,7 +421,7 @@ def update_user(request, pk):
 
     return Response({'message': 'Информация о пользователе успешно обновлена'}, status=status.HTTP_200_OK)
 
-
+@csrf_exempt
 @api_view(['POST'])
 def login_user(request):
     data = request.data
@@ -432,7 +434,7 @@ def login_user(request):
         return Response({'message': 'Пользователь успешно вошел в систему'}, status=status.HTTP_200_OK)
     return Response({'error': 'Неверное имя пользователя или пароль'}, status=status.HTTP_401_UNAUTHORIZED)
 
-
+@csrf_exempt
 @api_view(['POST'])
 def logout_user(request):
     logout(request)

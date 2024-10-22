@@ -17,7 +17,7 @@ class UserSingleton:
         """Создаем пользователей."""
        
         creator, _ = User.objects.get_or_create(
-            id=1,
+            # id=3,
             defaults={
                 'username': "creator_user",
                 'first_name': "Иван",
@@ -33,7 +33,7 @@ class UserSingleton:
 
        
         moderator, _ = User.objects.get_or_create(
-            id=2,
+            # id=2,
             defaults={
                 'username': "moderator_user",
                 'first_name': "Петр",
@@ -51,4 +51,8 @@ class UserSingleton:
 
 def get_mock_user():
     """Возвращает мокового пользователя (создателя)."""
-    return UserSingleton.get_instance()[0]  
+    return UserSingleton.get_instance()[0]
+
+def get_mock_user_moderator():
+    """Возвращает мокового пользователя (создателя)."""
+    return UserSingleton.get_instance()[1]    

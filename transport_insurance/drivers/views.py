@@ -5,7 +5,8 @@ from .serializers import DriverInsuranceSerializers, DriverSerializer, Insurance
 from django.db import models, connection
 from django.contrib.auth import authenticate, login, logout 
 from django.contrib.auth.decorators import login_required
-from django.http import Http404
+# from django.http import Http404
+from .singleton import get_mock_user, get_mock_user_moderator
 from rest_framework import  status
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
@@ -15,10 +16,26 @@ from minio import Minio
 from django.conf import settings
 import re
 
-SINGLITON_USER = User(id=1, username='admin')
-SINGLETON_MANAGER = User(id=2, username="manager")
+# SINGLITON_USER = User(id=1, username='admin')
+# SINGLETON_MANAGER = User(id=2, username="manager")
 
 
+def get_current_user():
+    """Получаем текущего пользователя (мокового пользователя)"""
+    mock_user = get_mock_user()
+
+    if not isinstance(mock_user, User):
+        raise ValueError("Неверный пользователь")
+    return mock_user
+
+
+def get_current_user_moderator():
+
+    mock_user_moderator = get_mock_user_moderator()
+
+    if not isinstance( mock_user_moderator, User):
+        raise ValueError("Неверный пользователь")
+    return mock_user_moderator
 
 class DriversAPIView(APIView):
     permission_classes = []
@@ -47,6 +64,11 @@ class DriversAPIView(APIView):
 
 
     def get_drivers_list(self, request):
+
+        try:
+            mock_user = get_current_user()  # Используем внешнюю функцию
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
         driver_name = request.GET.get('driver_name', '')
         drivers_list = self.get_drivers()
@@ -54,7 +76,7 @@ class DriversAPIView(APIView):
         if driver_name:
             drivers_list = self.get_drivers().filter(name__icontains=driver_name)
 
-        current_insurance = Insurance.objects.filter(creator=SINGLITON_USER, status='draft').first()
+        current_insurance = Insurance.objects.filter(creator=mock_user, status='draft').first()
 
         if current_insurance:
             quantity_of_drivers = Driver_Insurance.objects.filter(insurance=current_insurance).aggregate(total_quantity=models.Count("id"))['total_quantity'] or 0 if current_insurance else 0
@@ -109,7 +131,7 @@ class DriversAPIView(APIView):
         
         driver.status = 'deleted'
         driver.save()
-        return Response({'message': 'Услуга успешно удалена'}, status=status.HTTP_200_OK)
+        return Response({'message': 'Водитель успешно удален'}, status=status.HTTP_200_OK)
 
 
 
@@ -167,9 +189,13 @@ class DriversAPIView(APIView):
 
 
     def post_add_to_draft(self, request, id_driver):
+        try:
+            mock_user = get_current_user()  # Используем внешнюю функцию
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
         driver = get_object_or_404(self.get_drivers(), id=id_driver)
-        current_insurance, created = Insurance.objects.get_or_create(creator=SINGLITON_USER, status='draft')
+        current_insurance, created = Insurance.objects.get_or_create(creator=mock_user, status='draft')
             # driver_in_insurance, created_driver_in_insurance = Driver_Insurance.object.get_or_create(driver=driver, ) 
         if not Driver_Insurance.objects.filter(driver=driver, insurance=current_insurance).exists():
             created_driver_insurance = Driver_Insurance.objects.create(
@@ -210,7 +236,7 @@ def insurances_list(request):
         try:
             start_date = timezone.datetime.strptime(start_date, '%Y-%m-%d')
             end_date = timezone.datetime.strptime(end_date, '%Y-%m-%d')
-            insurances =  insurances.filter(creation_date__range=[start_date, end_date])
+            insurances =  insurances.filter(date_creation__range=[start_date, end_date])
         except ValueError:
             return Response({'error': 'Неверный формат даты. Используйте YYYY-MM-DD.'},status=status.HTTP_400_BAD_REQUEST)
 
@@ -239,6 +265,7 @@ def insurance_delete(request, id_insurance):
         return Response({'error': 'Страховка уже удалена'}, status=status.HTTP_404_NOT_FOUND)
     
     insurance.status = 'deleted'
+    insurance.date_formation = timezone.now()
     insurance.save()
     return Response({'message': 'Страховка успешна удалена'}, status=status.HTTP_204_NO_CONTENT)
 
@@ -279,7 +306,7 @@ def insurance_submit(request, id_insurance):
         return Response({'error': f'Не все поля страховки заполнены. Пустыми остались:{empty_fields_str}'}, status=status.HTTP_400_BAD_REQUEST)
     
     insurance.status = 'formed'
-    insurance.formation_date = timezone.now()
+    insurance.date_formation = timezone.now()
     insurance.save()
 
     insurance_serializer = InsuranceSerializer(insurance).data
@@ -288,6 +315,11 @@ def insurance_submit(request, id_insurance):
 
 @api_view(['PUT']) #нужен модератор
 def insurance_finalize(request, id_insurance):
+    try:
+        mock_user_moderator = get_current_user_moderator()  # Используем внешнюю функцию
+    except ValueError as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
     insurance = get_object_or_404( Insurance,id=id_insurance)
 
     if insurance.status == 'deleted':
@@ -305,6 +337,8 @@ def insurance_finalize(request, id_insurance):
         insurance.status = 'rejected'
         insurance.completion_date = timezone.now()
 
+    insurance.moderator = mock_user_moderator
+    insurance.date_completion = timezone.now()
     insurance.save()
     insurance_serializer = InsuranceSerializer(insurance).data
     return Response({'message': f'Стаховка успешно {action}.','insurance':insurance_serializer}, status=status.HTTP_200_OK)
@@ -355,54 +389,54 @@ def update_driver_owner_in_insurance(request, id_insurance, id_driver):
         
         
 
-# @api_view(['POST'])
-# def register_user(request):
-#     data = request.data
-#     username = data.get('username')
-#     password = data.get('password')
-#     email = data.get('email')
+@api_view(['POST'])
+def register_user(request):
+    data = request.data
+    username = data.get('username')
+    password = data.get('password')
+    email = data.get('email')
 
-#     if User.objects.filter(username=username).exists():
-#         return Response({'error': 'Пользователь с таким именем уже существует'}, status=status.HTTP_400_BAD_REQUEST)
+    if User.objects.filter(username=username).exists():
+        return Response({'error': 'Пользователь с таким именем уже существует'}, status=status.HTTP_400_BAD_REQUEST)
 
-#     if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-#         return Response({'error': 'Неверный формат email'}, status=status.HTTP_400_BAD_REQUEST)
+    if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+        return Response({'error': 'Неверный формат email'}, status=status.HTTP_400_BAD_REQUEST)
 
-#     user = User.objects.create_user(username=username, password=password, email=email)
-#     return Response({'message': 'Пользователь успешно зарегистрирован'}, status=status.HTTP_201_CREATED)
-
-
-# @api_view(['PUT'])
-# def update_user(request, pk):
-#     user = get_object_or_404(User, id=pk)
-#     data = request.data
-
-#     user.username = data.get('username', user.username)
-#     user.email = data.get('email', user.email)
-#     if 'password' in data:
-#         user.set_password(data['password'])
-#     user.save()
-
-#     return Response({'message': 'Информация о пользователе успешно обновлена'}, status=status.HTTP_200_OK)
+    user = User.objects.create_user(username=username, password=password, email=email)
+    return Response({'message': 'Пользователь успешно зарегистрирован'}, status=status.HTTP_201_CREATED)
 
 
-# @api_view(['POST'])
-# def login_user(request):
-#     data = request.data
-#     username = data.get('username')
-#     password = data.get('password')
+@api_view(['PUT'])
+def update_user(request, pk):
+    user = get_object_or_404(User, id=pk)
+    data = request.data
 
-#     user = authenticate(request, username=username, password=password)
-#     if user is not None:
-#         login(request, user)
-#         return Response({'message': 'Пользователь успешно вошел в систему'}, status=status.HTTP_200_OK)
-#     return Response({'error': 'Неверное имя пользователя или пароль'}, status=status.HTTP_401_UNAUTHORIZED)
+    user.username = data.get('username', user.username)
+    user.email = data.get('email', user.email)
+    if 'password' in data:
+        user.set_password(data['password'])
+    user.save()
+
+    return Response({'message': 'Информация о пользователе успешно обновлена'}, status=status.HTTP_200_OK)
 
 
-# @api_view(['POST'])
-# def logout_user(request):
-#     logout(request)
-#     return Response({'message': 'Пользователь успешно вышел из системы'}, status=status.HTTP_200_OK)
+@api_view(['POST'])
+def login_user(request):
+    data = request.data
+    username = data.get('username')
+    password = data.get('password')
+
+    user = authenticate(request, username=username, password=password)
+    if user is not None:
+        login(request, user)
+        return Response({'message': 'Пользователь успешно вошел в систему'}, status=status.HTTP_200_OK)
+    return Response({'error': 'Неверное имя пользователя или пароль'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@api_view(['POST'])
+def logout_user(request):
+    logout(request)
+    return Response({'message': 'Пользователь успешно вышел из системы'}, status=status.HTTP_200_OK)
 
 
 

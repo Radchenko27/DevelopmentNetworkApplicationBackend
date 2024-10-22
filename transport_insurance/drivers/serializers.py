@@ -30,6 +30,11 @@ class DriverInsuranceSerializers(serializers.ModelSerializer):
 class InsuranceSerializer(serializers.ModelSerializer):
 
     drivers = DriverInsuranceSerializers(many=True, source='driver_insurance_set') 
+    date_creation = serializers.DateTimeField(format='%Y-%m-%dT%H:%M', read_only=True)
+    date_formation = serializers.DateTimeField(format='%Y-%m-%dT%H:%M', allow_null=True, required=False)
+    date_creation = serializers.DateTimeField(format='%Y-%m-%dT%H:%M', allow_null=True, required=False)
+    date_begin = serializers.DateField(format='%Y-%m-%d', allow_null=True, required=False)
+    date_end = serializers.DateField(format='%Y-%m-%d', allow_null=True, required=False)
     class Meta:
         model = Insurance
         fields = [

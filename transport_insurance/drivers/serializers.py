@@ -9,16 +9,7 @@ from .models import  Insurance, Driver, Driver_Insurance
 #         fields = ['id', 'username', 'first_name', 'last_name', 'email', 'is_active', 'is_staff', 'is_superuser', 'date_joined']
 
 
-class InsuranceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Insurance
-        fields = [
-                    'id', 'type', 'certificate_number', 
-                    'certificate_series', 'date_creation', 'date_begin', 'date_end', 
-                    'date_completion', 'car_brand', 'car_model', 'car_region', 
-                    'status', 'creator', 'moderator', 'average_experience'
-            ]
-        
+
 
 class DriverSerializer(serializers.ModelSerializer):
     class Meta:
@@ -30,6 +21,21 @@ class DriverSerializer(serializers.ModelSerializer):
         
 
 class DriverInsuranceSerializers(serializers.ModelSerializer):
+    driver = DriverSerializer()
     class Meta:
         model = Driver_Insurance
         fields = ['id', 'driver', 'insurance', 'owner']
+
+
+class InsuranceSerializer(serializers.ModelSerializer):
+
+    drivers = DriverInsuranceSerializers(many=True, source='driver_insurance_set') 
+    class Meta:
+        model = Insurance
+        fields = [
+                    'id', 'type', 'certificate_number', 
+                    'certificate_series', 'date_creation', 'date_begin', 'date_end', 'date_formation',
+                    'date_completion', 'car_brand', 'car_model', 'car_region', 
+                    'status', 'creator', 'moderator', 'average_experience', 'drivers'
+            ]
+        

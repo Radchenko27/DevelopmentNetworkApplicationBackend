@@ -99,6 +99,7 @@ class Insurance(models.Model):
     date_creation = models.DateTimeField(default=timezone.now, verbose_name='Дата создания')
     date_begin = models.DateField(null=True, blank=True, verbose_name='Дата начала действия')
     date_end = models.DateField(null=True, blank=True, verbose_name='Дата конца действия')
+    date_formation = models.DateTimeField(null=True, blank=True, verbose_name='Дата оформления')
     date_completion = models.DateTimeField(null=True, blank=True, verbose_name='Дата завершения оформления')
     car_brand = models.CharField(max_length=50, verbose_name='Марка')
     car_model = models.CharField(max_length=50, verbose_name='Модель')
@@ -185,3 +186,23 @@ class Driver_Insurance(models.Model):
 
     def __str__(self):
         return f"Страховка {self.insurance.id} - Водитель {self.driver.name}"
+    
+
+class AuthUser(models.Model):
+    password = models.CharField(max_length=128)
+    last_login = models.DateTimeField(blank=True, null=True)
+    is_superuser = models.BooleanField(default=False)
+    username = models.CharField(unique=True, max_length=150)
+    last_name = models.CharField(max_length=150)
+    email = models.CharField(max_length=254)
+    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    date_joined = models.DateTimeField(auto_now=True)
+    first_name = models.CharField(max_length=150)
+
+    def __str__(self):
+        return f'{self.first_name} {self.last_name}'
+
+    class Meta:
+        managed = False
+        db_table = 'auth_user'

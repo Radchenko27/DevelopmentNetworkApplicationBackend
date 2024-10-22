@@ -7,18 +7,20 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from rest_framework import  status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .minio import add_pic 
 from minio import Minio
 from django.conf import settings
+import re
 
 SINGLITON_USER = User(id=1, username='admin')
+SINGLETON_MANAGER = User(id=2, username="manager")
+
 
 
 class DriversAPIView(APIView):
-
     permission_classes = []
     model_class = Driver
     serializer_class = DriverSerializer
@@ -35,12 +37,14 @@ class DriversAPIView(APIView):
                 return self.get_drivers_list(request)
 
 
+
     def get_driver_detail(self, request, id_driver):
             # Получаем конкретного водителя по ID
             driver = get_object_or_404(self.get_drivers(), id=id_driver)
             driver_data = self.serializer_class(driver).data
             return Response(driver_data, status=status.HTTP_200_OK,)
     
+
 
     def get_drivers_list(self, request):
         
@@ -69,6 +73,7 @@ class DriversAPIView(APIView):
         return Response(response_data,  status=status.HTTP_200_OK,)   
 
 
+
     def put(self, request, id_driver):
         # partial = request.method == 'PATCH'
         # print(request.data)
@@ -81,6 +86,7 @@ class DriversAPIView(APIView):
             return Response(driver_serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(driver_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
     def delete(self, request, id_driver):
@@ -106,6 +112,7 @@ class DriversAPIView(APIView):
         return Response({'message': 'Услуга успешно удалена'}, status=status.HTTP_200_OK)
 
 
+
     def post(self, request, id_driver=None): 
          
          if request.path.endswith('/add-image/'):  
@@ -116,7 +123,8 @@ class DriversAPIView(APIView):
          
          else:
             return self.post_add_driver(request)
-         
+
+
     
     def post_add_driver(self, request):
         # Логика для создания нового водителя 
@@ -130,6 +138,7 @@ class DriversAPIView(APIView):
             return Response(driver_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
     
+
     def post_add_image(self, request, id_driver):
         driver = get_object_or_404(self.get_drivers(), id=id_driver)
 
@@ -155,6 +164,7 @@ class DriversAPIView(APIView):
             'driver': driver_serializer
         }, status=status.HTTP_200_OK)
     
+
 
     def post_add_to_draft(self, request, id_driver):
         
@@ -185,14 +195,214 @@ class DriversAPIView(APIView):
 
 
 
+@api_view(['GET'])
+def insurances_list(request):
+    insurance_status = request.GET.get('insurance_status')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    insurances = Insurance.objects.exclude(status__in=['draft', 'deleted'])
+
+    if insurance_status:
+        insurances = insurances.filter(status=insurance_status)
+    
+    if start_date and end_date:
+        try:
+            start_date = timezone.datetime.strptime(start_date, '%Y-%m-%d')
+            end_date = timezone.datetime.strptime(end_date, '%Y-%m-%d')
+            insurances =  insurances.filter(creation_date__range=[start_date, end_date])
+        except ValueError:
+            return Response({'error': 'Неверный формат даты. Используйте YYYY-MM-DD.'},status=status.HTTP_400_BAD_REQUEST)
+
+    insurance_serializer = InsuranceSerializer(insurances, many=True).data
+    return Response({'insurances':insurance_serializer}, status=status.HTTP_200_OK)
 
 
+
+@api_view(['GET'])
+def insurance_detail(request, id_insurance):
+    insurance = get_object_or_404(Insurance, id=id_insurance)
+
+    if insurance.status == 'deleted' :
+        return Response({'error': 'Страховка не найдена'}, status=status.HTTP_404_NOT_FOUND)
+
+    insurance_serializer = InsuranceSerializer(insurance).data
+    return Response(insurance_serializer, status=status.HTTP_200_OK)
+
+
+
+@api_view(['DELETE'])
+def insurance_delete(request, id_insurance):
+    insurance = get_object_or_404(Insurance, id=id_insurance)
+
+    if insurance.status == 'deleted':
+        return Response({'error': 'Страховка уже удалена'}, status=status.HTTP_404_NOT_FOUND)
+    
+    insurance.status = 'deleted'
+    insurance.save()
+    return Response({'message': 'Страховка успешна удалена'}, status=status.HTTP_204_NO_CONTENT)
+
+
+
+@api_view(['PUT'])
+def insurance_update(request, id_insurance):
+
+    insurance = get_object_or_404(Insurance, id=id_insurance)
+
+    if insurance.status == 'deleted':
+        return Response({'error': 'Обновление удалённых страховок невозможно.'}, status=status.HTTP_400_BAD_REQUEST)
+   
+    insurance_serializer = InsuranceSerializer(insurance, data=request.data, partial=True)
+
+    if insurance_serializer.is_valid():
+       insurance_serializer.save()
+       return Response({'message': 'Страховка обновлёна успешно', 'insurance': insurance_serializer.data}, status=status.HTTP_200_OK)
+
+    print(insurance_serializer.errors)  
+    return Response(insurance_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['PUT'])
+def insurance_submit(request, id_insurance):
+    insurance = get_object_or_404(Insurance, id=id_insurance)
+
+    if insurance.status != 'draft':
+        return Response({'error': 'Страховка не в статусе черновика. Проверьте статус.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    empty_fields = []
+    fields = ['certificate_number', 'certificate_series', 'date_begin', 'date_end', 'car_model', 'car_region', 'type',]
+    for field in fields:
+        if not getattr(insurance, field, None):
+            empty_fields.append(field)
+    if empty_fields:
+        empty_fields_str = ', '.join(empty_fields)
+        return Response({'error': f'Не все поля страховки заполнены. Пустыми остались:{empty_fields_str}'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    insurance.status = 'formed'
+    insurance.formation_date = timezone.now()
+    insurance.save()
+
+    insurance_serializer = InsuranceSerializer(insurance).data
+    return Response({'message': 'Страховка подтверждён успешно', 'insurance': insurance_serializer}, status=status.HTTP_200_OK)
+
+
+@api_view(['PUT']) #нужен модератор
+def insurance_finalize(request, id_insurance):
+    insurance = get_object_or_404( Insurance,id=id_insurance)
+
+    if insurance.status == 'deleted':
+        return Response({'error': 'Страховка удалена и не может быть завершена'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    action = request.data.get('action')
+
+    if not action or action not in ['completed', 'rejected']:
+        return Response({'error': 'Некорректное действие. Параметр запроса пуст.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if action == 'completed':
+        insurance.status = 'completed'
+        insurance.completion_date = timezone.now()
+    elif action == 'rejected':
+        insurance.status = 'rejected'
+        insurance.completion_date = timezone.now()
+
+    insurance.save()
+    insurance_serializer = InsuranceSerializer(insurance).data
+    return Response({'message': f'Стаховка успешно {action}.','insurance':insurance_serializer}, status=status.HTTP_200_OK)
+
+
+
+@api_view(['DELETE'])
+def delete_driver_from_insurance(request, id_insurance, id_driver):
+    insurance = get_object_or_404(Insurance, id=id_insurance)
+
+    if insurance.status == 'deleted':
+        return Response({'error': 'Страховка удалена, нельзя удалить водителя'}, status=status.HTTP_400_BAD_REQUEST)
+
+    driver = get_object_or_404(Driver, id=id_driver)
+    driver_to_insurance = Driver_Insurance.objects.filter(driver=driver, insurance=insurance).first()
+
+    if driver_to_insurance:
+        driver_to_insurance.delete()
+        return Response({'message': 'Водитель удален из страховки'}, status=status.HTTP_204_NO_CONTENT)
+    else:
+        return Response({'error': 'Водитель не найден в страховке'}, status=status.HTTP_404_NOT_FOUND)
+    
+
+@api_view(['PUT'])
+def update_driver_owner_in_insurance(request, id_insurance, id_driver):
+    insurance = get_object_or_404(Insurance, id=id_insurance)
+    driver = get_object_or_404(Driver, id=id_driver)
+
+    driver_to_insurance = get_object_or_404(Driver_Insurance, driver=driver, insurance=insurance)
+    if driver_to_insurance:
+        data = request.data
+        owner = bool(data.get('owner'))
+
+        if owner:
+            current_driver_to_insurance_owner = Driver_Insurance.objects.filter(owner=owner, insurance=insurance).first()
+            if current_driver_to_insurance_owner:
+                current_driver_to_insurance_owner.owner=False
+                current_driver_to_insurance_owner.save()
+                driver_to_insurance.owner = owner
+                driver_to_insurance.save()
+                return Response({'message': 'В страховке ранее был указан владелец. Была произведена замена.'}, status=status.HTTP_200_OK)
             
+            driver_to_insurance.owner = owner
+            driver_to_insurance.save()
+            return Response({'message': 'Владелец в текущую страховку успешно добавлен.'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Добавьте значение передаваемого параметра owner. Водитель по умолчанию уже не являелся владельцом.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        
+
+# @api_view(['POST'])
+# def register_user(request):
+#     data = request.data
+#     username = data.get('username')
+#     password = data.get('password')
+#     email = data.get('email')
+
+#     if User.objects.filter(username=username).exists():
+#         return Response({'error': 'Пользователь с таким именем уже существует'}, status=status.HTTP_400_BAD_REQUEST)
+
+#     if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+#         return Response({'error': 'Неверный формат email'}, status=status.HTTP_400_BAD_REQUEST)
+
+#     user = User.objects.create_user(username=username, password=password, email=email)
+#     return Response({'message': 'Пользователь успешно зарегистрирован'}, status=status.HTTP_201_CREATED)
 
 
+# @api_view(['PUT'])
+# def update_user(request, pk):
+#     user = get_object_or_404(User, id=pk)
+#     data = request.data
+
+#     user.username = data.get('username', user.username)
+#     user.email = data.get('email', user.email)
+#     if 'password' in data:
+#         user.set_password(data['password'])
+#     user.save()
+
+#     return Response({'message': 'Информация о пользователе успешно обновлена'}, status=status.HTTP_200_OK)
 
 
+# @api_view(['POST'])
+# def login_user(request):
+#     data = request.data
+#     username = data.get('username')
+#     password = data.get('password')
 
+#     user = authenticate(request, username=username, password=password)
+#     if user is not None:
+#         login(request, user)
+#         return Response({'message': 'Пользователь успешно вошел в систему'}, status=status.HTTP_200_OK)
+#     return Response({'error': 'Неверное имя пользователя или пароль'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+# @api_view(['POST'])
+# def logout_user(request):
+#     logout(request)
+#     return Response({'message': 'Пользователь успешно вышел из системы'}, status=status.HTTP_200_OK)
 
 
 

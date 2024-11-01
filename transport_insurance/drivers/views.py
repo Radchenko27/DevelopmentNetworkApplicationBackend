@@ -49,18 +49,18 @@ class DriversAPIView(APIView):
     
 
     def get(self, request, id_driver=None):
-            if id_driver:
-                return self.get_driver_detail(request, id_driver)
-            else:
-                return self.get_drivers_list(request)
+        if id_driver:
+            return self.get_driver_detail(request, id_driver)
+        else:
+            return self.get_drivers_list(request)
 
 
 
     def get_driver_detail(self, request, id_driver):
             # Получаем конкретного водителя по ID
-            driver = get_object_or_404(self.get_drivers(), id=id_driver)
-            driver_data = self.serializer_class(driver).data
-            return Response(driver_data, status=status.HTTP_200_OK,)
+        driver = get_object_or_404(self.get_drivers(), id=id_driver)
+        driver_data = self.serializer_class(driver).data
+        return Response(driver_data, status=status.HTTP_200_OK,)
     
 
 
@@ -241,7 +241,7 @@ def insurances_list(request):
         except ValueError:
             return Response({'error': 'Неверный формат даты. Используйте YYYY-MM-DD.'},status=status.HTTP_400_BAD_REQUEST)
 
-    insurance_serializer = InsuranceSerializer(insurances, many=True).data
+    insurance_serializer = InsuranceSerializer(insurances, many=True, exclude_fields=['drivers']).data
     return Response({'insurances':insurance_serializer}, status=status.HTTP_200_OK)
 
 

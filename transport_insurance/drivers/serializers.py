@@ -35,6 +35,7 @@ class InsuranceSerializer(serializers.ModelSerializer):
     date_creation = serializers.DateTimeField(format='%Y-%m-%dT%H:%M', allow_null=True, required=False)
     date_begin = serializers.DateField(format='%Y-%m-%d', allow_null=True, required=False)
     date_end = serializers.DateField(format='%Y-%m-%d', allow_null=True, required=False)
+    
     class Meta:
         model = Insurance
         fields = [
@@ -43,4 +44,14 @@ class InsuranceSerializer(serializers.ModelSerializer):
                     'date_completion', 'car_brand', 'car_model', 'car_region', 
                     'status', 'creator', 'moderator', 'average_experience', 'drivers'
             ]
-        
+
+
+    def __init__(self, *args, **kwargs):
+
+        exclude_fields = kwargs.pop('exclude_fields', None)
+        if exclude_fields:
+            for field in exclude_fields:
+                self.fields.pop(field) 
+        super(InsuranceSerializer, self).__init__(*args, **kwargs)  
+
+         

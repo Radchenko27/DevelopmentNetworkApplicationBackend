@@ -5,10 +5,13 @@ from .views import *
 
 urlpatterns = [
     #Домен водители
-    path('drivers/',DriversAPIView.as_view(), name='drivers-list'),
-    path('drivers/<int:id_driver>/', DriversAPIView.as_view(), name='driver-detail'),
-    path('drivers/<int:id_driver>/add-image/', DriversAPIView.as_view(), name='driver-add-image'),
-    path('drivers/<int:id_driver>/add-to-draft/', DriversAPIView.as_view(), name='driver-add-to-draft'),
+    path('drivers/',drivers_list, name='drivers-list'),
+    path('drivers/add', driver_add, name='driver-add'),
+    path('drivers/<int:id_driver>/', driver_detail, name='driver-detail'),
+    path('drivers/<int:id_driver>/update/', driver_update, name='driver-update'),
+    path('drivers/<int:id_driver>/delete/', driver_delete, name='driver-delete'),
+    path('drivers/<int:id_driver>/add-image/', driver_add_image, name='driver-add-image'),
+    path('drivers/<int:id_driver>/add-to-draft/', driver_add_to_draft, name='driver-add-to-draft'),
     
     #Домен страховки
     path('insurances/',insurances_list , name='insurances-list'),

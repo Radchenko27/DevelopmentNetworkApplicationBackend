@@ -1,5 +1,4 @@
 from django.shortcuts import render,  get_object_or_404, redirect
-# from .models import Driver, Insurance, Driver_Insurance
 from .models import *
 from .serializers import DriverInsuranceSerializers, DriverSerializer, InsuranceSerializer
 from django.db import models, connection
@@ -16,6 +15,10 @@ from .minio import add_pic
 from minio import Minio
 from django.conf import settings
 import re
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
+
 
 # SINGLITON_USER = User(id=1, username='admin')
 # SINGLETON_MANAGER = User(id=2, username="manager")
@@ -31,194 +34,211 @@ def get_current_user():
 
 
 def get_current_user_moderator():
-
     mock_user_moderator = get_mock_user_moderator()
-
     if not isinstance( mock_user_moderator, User):
         raise ValueError("Неверный пользователь")
     return mock_user_moderator
 
-class DriversAPIView(APIView):
-    permission_classes = []
-    model_class = Driver
-    serializer_class = DriverSerializer
 
 
-    def get_drivers(self):
-        return self.model_class.objects.exclude(status='удалена')
+@swagger_auto_schema(
+                method='get',
+                manual_parameters=[
+                    openapi.Parameter(
+                        'driver_name',
+                        openapi.IN_QUERY,
+                        description="ФИО водителя",
+                        type=openapi.TYPE_STRING,
+                        required=False,
+                    ),
+                ],
+                responses={
+                    200: DriverSerializer(many=True),
+                    400: openapi.Response(
+                        description="Ошибка в параметрах запроса",
+                        schema=openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            properties={
+                                'error': openapi.Schema(type=openapi.TYPE_STRING, description="Описание ошибки")
+                            }
+                        )
+                    )
+                },
+                operation_summary="Получить список водителей",
+                operation_description="Возвращает список водителей с поиском по ФИО."
+    )
+@api_view(['GET'])
+def drivers_list(request):
+    try:
+        mock_user = get_current_user()  # Используем внешнюю функцию
+    except ValueError as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
+    driver_name = request.GET.get('driver_name', '')
+    drivers_list = Driver.objects.exclude(status='deleted')
 
-    def get(self, request, id_driver=None):
-        if id_driver:
-            return self.get_driver_detail(request, id_driver)
-        else:
-            return self.get_drivers_list(request)
+    if driver_name:
+        drivers_list = drivers_list.filter(name__icontains=driver_name)
+
+    current_insurance = Insurance.objects.filter(creator=mock_user, status='draft').first()
+
+    if current_insurance:
+        quantity_of_drivers = Driver_Insurance.objects.filter(insurance=current_insurance).aggregate(total_quantity=models.Count("id"))['total_quantity'] or 0 if current_insurance else 0
+        current_insurance_id = current_insurance.id
+
+    else:
+        quantity_of_drivers = 0
+        current_insurance_id = None
+
+    drivers = DriverSerializer(drivers_list, many=True).data
+    response_data = {
+            'drivers': drivers,
+            'quantity_of_drivers': quantity_of_drivers ,
+            'current_insurance_id': current_insurance_id,
+    }
+    return Response(response_data,  status=status.HTTP_200_OK)   
 
 
 
-    def get_driver_detail(self, request, id_driver):
-            # Получаем конкретного водителя по ID
-        driver = get_object_or_404(self.get_drivers(), id=id_driver)
-        driver_data = self.serializer_class(driver).data
-        return Response(driver_data, status=status.HTTP_200_OK,)
+
+@swagger_auto_schema(
+    method='get',
+    responses={200: DriverSerializer},
+    operation_summary="Получить водителя",
+    operation_description="Получает все данные о водителе по id."
+)
+@api_view(['GET'])
+def driver_detail(request, id_driver):
+        # Получаем конкретного водителя по ID
+    driver = get_object_or_404(Driver.objects.exclude(status='deleted'), id=id_driver)
+    driver_data = DriverSerializer(driver).data
+    return Response(driver_data, status=status.HTTP_200_OK)
+
+
+
+@swagger_auto_schema(
+    method='put',
+    request_body=DriverSerializer,
+    responses={200: DriverSerializer, 404: "Водитель не найден.", 400: "Ошибка в запросе. Обновление невозможно."},
+    operation_summary="Обновить водителя",
+    operation_description="Обновляет данные о водителе по id."
+)
+@api_view(['PUT'])
+def driver_update(request, id_driver):
+    driver = get_object_or_404(Driver.objects.exclude(status='deleted'), id=id_driver)
+    driver_serializer = DriverSerializer(driver, data=request.data, partial=True)
     
+    if driver_serializer.is_valid(raise_exception=True):
+        driver_serializer.save()
+        return Response(driver_serializer.data, status=status.HTTP_200_OK)
+    else:
+        return Response(driver_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-    def get_drivers_list(self, request):
 
+@swagger_auto_schema(
+    method='delete',
+    responses={204: "Водитель удалён", 404: "Водитель не найден", 400: "Ошибка в запросе. Невозможно удалить"},
+    operation_summary="Удалить водителя",
+    operation_description="Помечает водителя как удалённый."
+)
+@api_view(['DELETE']) 
+def driver_delete(request, id_driver):
+    driver = get_object_or_404(Driver, id=id_driver)
+
+    if driver.status == 'deleted':
+            return Response({'error': 'Этот водитель уже был удален.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if driver.image_url:
+        client = Minio(
+            endpoint=settings.AWS_S3_ENDPOINT_URL,
+            access_key=settings.AWS_ACCESS_KEY_ID,
+            secret_key=settings.AWS_SECRET_ACCESS_KEY,
+            secure=settings.MINIO_USE_SSL
+        )
         try:
-            mock_user = get_current_user()  # Используем внешнюю функцию
-        except ValueError as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        
-        driver_name = request.GET.get('driver_name', '')
-        drivers_list = self.get_drivers()
-
-        if driver_name:
-            drivers_list = self.get_drivers().filter(name__icontains=driver_name)
-
-        current_insurance = Insurance.objects.filter(creator=mock_user, status='draft').first()
-
-        if current_insurance:
-            quantity_of_drivers = Driver_Insurance.objects.filter(insurance=current_insurance).aggregate(total_quantity=models.Count("id"))['total_quantity'] or 0 if current_insurance else 0
-            current_insurance_id = current_insurance.id
-
-        else:
-            quantity_of_drivers = 0
-            current_insurance_id = None
-
-        drivers = self.serializer_class(drivers_list, many=True).data
-        response_data = {
-             'drivers': drivers,
-             'quantity_of_drivers': quantity_of_drivers ,
-             'current_insurance_id': current_insurance_id,
-        }
-        return Response(response_data,  status=status.HTTP_200_OK,)   
-
-
-
-    def put(self, request, id_driver):
-        # partial = request.method == 'PATCH'
-        # print(request.data)
-        driver = get_object_or_404(self.get_drivers() , id=id_driver)
-        # print(driver)
-        driver_serializer = self.serializer_class(driver, data=request.data, partial=True)
-        # print(driver_serializer)
-        if driver_serializer.is_valid(raise_exception=True):
-            driver_serializer.save()
-            return Response(driver_serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(driver_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-    def delete(self, request, id_driver):
-        driver = get_object_or_404(self.get_drivers() , id=id_driver)
-
-        if driver.status == 'deleted':
-             return Response({'error': 'Эта услуга уже была удалена.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        if driver.image_url:
-            client = Minio(
-                endpoint=settings.AWS_S3_ENDPOINT_URL,
-                access_key=settings.AWS_ACCESS_KEY_ID,
-                secret_key=settings.AWS_SECRET_ACCESS_KEY,
-                secure=settings.MINIO_USE_SSL
-            )
-            try:
-                client.remove_object('drivers', f"{driver.id}.png")
-            except Exception as e:
-                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        
-        driver.status = 'deleted'
-        driver.save()
-        return Response({'message': 'Водитель успешно удален'}, status=status.HTTP_200_OK)
-
-
-
-    def post(self, request, id_driver=None): 
-         
-         if request.path.endswith('/add-image/'):  
-            return self.post_add_image(request, id_driver)
-         
-         elif request.path.endswith('/add-to-draft/'):
-            return self.post_add_to_draft(request, id_driver)
-         
-         else:
-            return self.post_add_driver(request)
-
-
+            client.remove_object('drivers', f"{driver.id}.png")
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
-    def post_add_driver(self, request):
-        # Логика для создания нового водителя 
-        driver_serializer = self.serializer_class(data=request.data)
-        if driver_serializer.is_valid():
-            new_driver = driver_serializer.save()
-            # Сериализуем и возвращаем данные нового водителя
-            response_data = self.serializer_class(new_driver).data  # Сериализуем новую услугу
-            return Response(response_data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(driver_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    driver.status = 'deleted'
+    driver.save()
+    return Response({'message': 'Водитель успешно удален'}, status=status.HTTP_204_NO_CONTENT)
+
+
+
+@api_view(['POST'])    
+def driver_add(request):
+    # Логика для создания нового водителя 
+    driver_serializer = DriverSerializer(data=request.data)
+    if driver_serializer.is_valid():
+        new_driver = driver_serializer.save()
+        # Сериализуем и возвращаем данные нового водителя
+        response_data = DriverSerializer(new_driver).data  # Сериализуем новую услугу
+        return Response(response_data, status=status.HTTP_201_CREATED)
+    else:
+        return Response(driver_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
     
 
-    def post_add_image(self, request, id_driver):
-        driver = get_object_or_404(self.get_drivers(), id=id_driver)
+@api_view(['POST'])
+def driver_add_image(request, id_driver):
+    driver = get_object_or_404(Driver.objects.exclude(status='deleted'), id=id_driver)
 
-        if driver.status == 'deleted':
-            return Response({'error': 'Нельзя добавлять изображение к удаленному водителю.'}, status=status.HTTP_400_BAD_REQUEST)
+    if driver.status == 'deleted':
+        return Response({'error': 'Нельзя добавлять изображение к удаленному водителю.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if 'image' not in request.FILES:
-            return Response({'error': 'Изображение не предоставлено'}, status=status.HTTP_400_BAD_REQUEST)
+    if 'image' not in request.FILES:
+        return Response({'error': 'Изображение не предоставлено'}, status=status.HTTP_400_BAD_REQUEST)
 
-        image = request.FILES['image']
-        result = add_pic(driver, image)
+    image = request.FILES['image']
+    result = add_pic(driver, image)
 
-        if 'error' in result:
-            return Response({'error': result['error']}, status=status.HTTP_400_BAD_REQUEST)
+    if 'error' in result:
+        return Response({'error': result['error']}, status=status.HTTP_400_BAD_REQUEST)
 
-        driver.image_url = result['image_url']
-        driver.save()
+    driver.image_url = result['image_url']
+    driver.save()
 
-        driver_serializer = self.serializer_class(driver).data
+    driver_serializer = DriverSerializer(driver).data
 
-        return Response({
-            'message': 'Изображение успешно добавлено или обновлено',
-            'driver': driver_serializer
-        }, status=status.HTTP_200_OK)
+    return Response({
+        'message': 'Изображение успешно добавлено или обновлено',
+        'driver': driver_serializer
+    }, status=status.HTTP_200_OK)
     
 
 
-    def post_add_to_draft(self, request, id_driver):
-        try:
-            mock_user = get_current_user()  # Используем внешнюю функцию
-        except ValueError as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        
-        driver = get_object_or_404(self.get_drivers(), id=id_driver)
-        current_insurance, created = Insurance.objects.get_or_create(creator=mock_user, status='draft')
-            # driver_in_insurance, created_driver_in_insurance = Driver_Insurance.object.get_or_create(driver=driver, ) 
-        if not Driver_Insurance.objects.filter(driver=driver, insurance=current_insurance).exists():
-            created_driver_insurance = Driver_Insurance.objects.create(
-                insurance=current_insurance,
-                driver=driver,
-                owner=False, 
-                )            
-        else:
-            return Response({'error': 'Водитель уже добавлен в данную страховку'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        current_insurance.save()
-        created_driver_insurance.save()
+@api_view(['POST'])
+def driver_add_to_draft(request, id_driver):
+    try:
+        mock_user = get_current_user()  # Используем внешнюю функцию
+    except ValueError as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+    driver = get_object_or_404(Driver.objects.exclude(status='deleted'), id=id_driver)
+    current_insurance, created = Insurance.objects.get_or_create(creator=mock_user, status='draft')
 
-        insurance_serializer = InsuranceSerializer(current_insurance).data
+    if not Driver_Insurance.objects.filter(driver=driver, insurance=current_insurance).exists():
+        created_driver_insurance = Driver_Insurance.objects.create(
+            insurance=current_insurance,
+            driver=driver,
+            owner=False, 
+            )            
+    else:
+        return Response({'error': 'Водитель уже добавлен в данную страховку'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    current_insurance.save()
+    created_driver_insurance.save()
 
-        return Response(
-                {
-                    'message':'Водитель добавлен в черновик страховки',
-                    'current_insurance': insurance_serializer,
-                },
-                status=status.HTTP_201_CREATED
-            )
+    insurance_serializer = InsuranceSerializer(current_insurance).data
+    return Response(
+            {
+                'message':'Водитель добавлен в черновик страховки',
+                'current_insurance': insurance_serializer,
+            },
+            status=status.HTTP_201_CREATED
+        )
 
 
 

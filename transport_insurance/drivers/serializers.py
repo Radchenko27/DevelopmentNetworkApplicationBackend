@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import  Insurance, Driver, Driver_Insurance
+from .models import  Insurance, Driver, Driver_Insurance, CustomUser
 
 
 
@@ -7,8 +7,6 @@ from .models import  Insurance, Driver, Driver_Insurance
 #     class Meta:
 #         model = AuthUser
 #         fields = ['id', 'username', 'first_name', 'last_name', 'email', 'is_active', 'is_staff', 'is_superuser', 'date_joined']
-
-
 
 
 class DriverSerializer(serializers.ModelSerializer):
@@ -45,13 +43,24 @@ class InsuranceSerializer(serializers.ModelSerializer):
                     'status', 'creator', 'moderator', 'average_experience', 'drivers'
             ]
 
-
     def __init__(self, *args, **kwargs):
-
         exclude_fields = kwargs.pop('exclude_fields', None)
         if exclude_fields:
             for field in exclude_fields:
                 self.fields.pop(field) 
         super(InsuranceSerializer, self).__init__(*args, **kwargs)  
+
+
+class CustomUserSerializer(serializers.ModelSerializer):
+
+    is_staff = serializers.BooleanField(default=True, required=False)
+    is_superuser = serializers.BooleanField(default=True, required=False)
+    
+    class Meta:
+        model = CustomUser
+        fields = ['email', 'password', 'is_staff', 'is_superuser']
+
+
+
 
          

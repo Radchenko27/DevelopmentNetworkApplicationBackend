@@ -7,7 +7,8 @@ from django.contrib.auth.decorators import login_required
 # from django.http import Http404
 from .singleton import get_mock_user, get_mock_user_moderator
 from rest_framework import  status
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -17,6 +18,9 @@ from django.conf import settings
 import re
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+import logging
+from .permissions import *
+
 
 
 
@@ -68,6 +72,7 @@ def get_current_user_moderator():
                 operation_description="Возвращает список водителей с поиском по ФИО."
     )
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def drivers_list(request):
     try:
         mock_user = get_current_user()  # Используем внешнюю функцию
@@ -108,6 +113,7 @@ def drivers_list(request):
     operation_description="Получает все данные о водителе по id."
 )
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def driver_detail(request, id_driver):
         # Получаем конкретного водителя по ID
     driver = get_object_or_404(Driver.objects.exclude(status='deleted'), id=id_driver)
@@ -167,6 +173,13 @@ def driver_delete(request, id_driver):
 
 
 
+@swagger_auto_schema(
+    method='post',
+    request_body=DriverSerializer,
+    responses={201: DriverSerializer,  400: "Ошибка в запросе. Невозможно добавить водителя"},
+    operation_summary="Добавить водителя",
+    operation_description="Добавляет активного водителя."
+)
 @api_view(['POST'])    
 def driver_add(request):
     # Логика для создания нового водителя 
@@ -179,8 +192,20 @@ def driver_add(request):
     else:
         return Response(driver_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
-    
 
+
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'image': openapi.Schema(type=openapi.TYPE_FILE, description='Изображение для добавления')
+        }
+    ),
+    responses={200: DriverSerializer, 400: "Ошибка в запросе. Невозможно добавить картинку водителю.", 404: "Водитель не найден."},
+    operation_summary="Добавить аватар водителю",
+    operation_description="Добавляет аватар активному водителю."
+)
 @api_view(['POST'])
 def driver_add_image(request, id_driver):
     driver = get_object_or_404(Driver.objects.exclude(status='deleted'), id=id_driver)
@@ -209,6 +234,13 @@ def driver_add_image(request, id_driver):
     
 
 
+@swagger_auto_schema(
+    method='post',
+    request_body=DriverSerializer,
+    responses={200: DriverSerializer, 400: "Ошибка в запросе. Невозможно добавить водителя.", 404: "Водитель не найден."},
+    operation_summary="Добавить водителя в страховку",
+    operation_description="Добавляет активного водителя в страховку."
+)
 @api_view(['POST'])
 def driver_add_to_draft(request, id_driver):
     try:
@@ -241,7 +273,17 @@ def driver_add_to_draft(request, id_driver):
         )
 
 
-
+@swagger_auto_schema(
+    method='get',
+    manual_parameters=[
+        openapi.Parameter('insurance_status', openapi.IN_QUERY, description="Фильтр по статусу страховки", type=openapi.TYPE_STRING),
+        openapi.Parameter('start_date', openapi.IN_QUERY, description="Начальная дата", type=openapi.TYPE_STRING),
+        openapi.Parameter('end_date', openapi.IN_QUERY, description="Конечная дата", type=openapi.TYPE_STRING)
+    ],
+    responses={200: InsuranceSerializer(many=True), 400: "Ошибка в запросе"},
+    operation_summary="Получить список страховок",
+    operation_description="Возвращает список страховок с фильтрацией по статусу и дате создания."
+)
 @api_view(['GET'])
 def insurances_list(request):
     insurance_status = request.GET.get('insurance_status')
@@ -266,6 +308,12 @@ def insurances_list(request):
 
 
 
+@swagger_auto_schema(
+    method='get',
+    responses={200: InsuranceSerializer(), 404: "Страховка не найдена"},
+    operation_summary="Получить страховку",
+    operation_description="Возвращает информацию о конкретной страховке по её ID."
+)
 @api_view(['GET'])
 def insurance_detail(request, id_insurance):
     insurance = get_object_or_404(Insurance, id=id_insurance)
@@ -278,6 +326,12 @@ def insurance_detail(request, id_insurance):
 
 
 
+@swagger_auto_schema(
+    method='delete',
+    responses={204: "Страховка удалена", 404: "Страховка не найдена", 400: "Невозможно удалить страховку"},
+    operation_summary="Удалить страховку",
+    operation_description="Помечает страховку как удалённую."
+)
 @api_view(['DELETE'])
 def insurance_delete(request, id_insurance):
     insurance = get_object_or_404(Insurance, id=id_insurance)
@@ -292,6 +346,17 @@ def insurance_delete(request, id_insurance):
 
 
 
+@swagger_auto_schema(
+    method='put',
+    request_body=InsuranceSerializer,
+    responses={
+        200: "Страховка обновлена",
+        404: "Страховка не найдена",
+        400: "Ошибка обновления страховки"
+    },
+    operation_summary="Изменить страховку",
+    operation_description="Обновляет данные страховки по его ID."
+)
 @api_view(['PUT'])
 def insurance_update(request, id_insurance):
 
@@ -310,6 +375,14 @@ def insurance_update(request, id_insurance):
     return Response(insurance_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
+
+@swagger_auto_schema(
+    method='put',
+    responses={200: "Страховка подтверждена", 404: "Страховка не найдена", 400: "Ошибка подтверждения страховки"},
+    operation_summary="Подтвердить страховку",
+    operation_description="Подтверждает страховку по его ID."
+)
 @api_view(['PUT'])
 def insurance_submit(request, id_insurance):
     insurance = get_object_or_404(Insurance, id=id_insurance)
@@ -334,6 +407,20 @@ def insurance_submit(request, id_insurance):
     return Response({'message': 'Страховка подтверждён успешно', 'insurance': insurance_serializer}, status=status.HTTP_200_OK)
 
 
+
+@swagger_auto_schema(
+    method='put',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'action': openapi.Schema(type=openapi.TYPE_STRING, description="Действие: completed или rejected")
+        },
+        required=['action']
+    ),
+    responses={200: "Страховка завершена", 400: "Ошибка завершения", 403: "Нет пользовательских прав на завершении страховки"},
+    operation_summary="Завершить или отклонить страховку",
+    operation_description="Завершает или отклоняет страховку по его ID."
+)
 @api_view(['PUT']) #нужен модератор
 def insurance_finalize(request, id_insurance):
     try:
@@ -366,6 +453,16 @@ def insurance_finalize(request, id_insurance):
 
 
 
+@swagger_auto_schema(
+    method='delete',
+    operation_summary="Удалить водителя из страховки",
+    operation_description="Удаление водителя из страховки.",
+    responses={
+        204: 'Водитель удален из страховки.',
+        400: 'Страховка удалена, нельзя удалить водителя.',
+        404: 'Водитель не найден в страховке.',
+    }
+)
 @api_view(['DELETE'])
 def delete_driver_from_insurance(request, id_insurance, id_driver):
     insurance = get_object_or_404(Insurance, id=id_insurance)
@@ -383,6 +480,24 @@ def delete_driver_from_insurance(request, id_insurance, id_driver):
         return Response({'error': 'Водитель не найден в страховке'}, status=status.HTTP_404_NOT_FOUND)
     
 
+
+@swagger_auto_schema(
+    method='put',
+    operation_summary="Изменить владельца страховки",
+    operation_description="Изменение владельца страховки",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'owner': openapi.Schema(type=openapi.TYPE_BOOLEAN, description='Новый владелец')
+        },
+        required=['owner']
+    ),
+    responses={
+        200: 'Владелец страховки успешно обновлён.',
+        400: 'Ошибка в запросе.',
+        404: 'Страховка или водитель не найдены.',
+    }
+)
 @api_view(['PUT'])
 def update_driver_owner_in_insurance(request, id_insurance, id_driver):
     insurance = get_object_or_404(Insurance, id=id_insurance)
@@ -408,7 +523,47 @@ def update_driver_owner_in_insurance(request, id_insurance, id_driver):
         else:
             return Response({'error': 'Добавьте значение передаваемого параметра owner. Водитель по умолчанию уже не являелся владельцом.'}, status=status.HTTP_400_BAD_REQUEST)
         
+
+
+
+
+logger = logging.getLogger(__name__)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])  # Для входа без ограничений
+def login_user(request):
+    email = request.data.get('email')
+    password = request.data.get('password')
+
+    # Логирование попытки входа
+    logger.info(f"Попытка входа пользователя с email: {email}")
+
+    user = authenticate(request, email=email, password=password)
+    
+    if user is not None:
+        # Вход пользователя
+        login(request, user)
+
+        # Генерация уникального идентификатора сессии
+        session_id = request.session.session_key
         
+        if session_id:  # Проверяем, что session_id не None
+            # Сохранение ID пользователя в Redis с ключом session_id
+            # redis_client.set(session_id, user.id, ex=3600)  # Сохраняем ID пользователя с TTL 1 час
+            
+            logger.info(f"Сессия сохранена в Redis для пользователя с email: {email}, session_id: {session_id}")
+
+            return Response({'session_id': session_id}, status=status.HTTP_200_OK)
+        else:
+            logger.error("Не удалось получить session_id.")
+            return Response({'detail': 'Ошибка создания сессии.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    logger.warning(f"Неверная попытка входа для email: {email}")
+    return Response({'detail': 'Неверный email или пароль.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+
 @csrf_exempt
 @api_view(['POST'])
 def register_user(request):
@@ -441,18 +596,18 @@ def update_user(request, pk):
 
     return Response({'message': 'Информация о пользователе успешно обновлена'}, status=status.HTTP_200_OK)
 
-@csrf_exempt
-@api_view(['POST'])
-def login_user(request):
-    data = request.data
-    username = data.get('username')
-    password = data.get('password')
+# @csrf_exempt
+# @api_view(['POST'])
+# def login_user(request):
+#     data = request.data
+#     username = data.get('username')
+#     password = data.get('password')
 
-    user = authenticate(request, username=username, password=password)
-    if user is not None:
-        login(request, user)
-        return Response({'message': 'Пользователь успешно вошел в систему'}, status=status.HTTP_200_OK)
-    return Response({'error': 'Неверное имя пользователя или пароль'}, status=status.HTTP_401_UNAUTHORIZED)
+#     user = authenticate(request, username=username, password=password)
+#     if user is not None:
+#         login(request, user)
+#         return Response({'message': 'Пользователь успешно вошел в систему'}, status=status.HTTP_200_OK)
+#     return Response({'error': 'Неверное имя пользователя или пароль'}, status=status.HTTP_401_UNAUTHORIZED)
 
 @csrf_exempt
 @api_view(['POST'])
@@ -463,139 +618,6 @@ def logout_user(request):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# def drivers_list(request):
-    
-#     driver_name = request.GET.get('driver_name', '')
-#     drivers_list = Driver.objects.filter(status='active')
-
-#     current_insurance = None
-
-#     if request.user.is_authenticated:
-#         current_insurance = Insurance.objects.filter(creator=request.user, status='draft').first()
-        
-#     if driver_name:
-#          drivers_list = drivers_list.filter(name__icontains=driver_name)
-
-#     quantity_of_drivers = Driver_Insurance.objects.filter(insurance=current_insurance).aggregate(total_quantity=models.Count("id"))['total_quantity'] or 0 if current_insurance else 0
-    
-#     return render(request, 'drivers/drivers_list.html', {
-#         'drivers_list': drivers_list,
-#         'quantity_of_drivers':quantity_of_drivers,
-#         'id_insurance': current_insurance.id if current_insurance else None,
-#     })
-
-
-
-# def driver_detail(request, id_driver):
-
-#     driver= get_object_or_404(Driver, id=id_driver)
-
-#     return render(request, 'drivers/driver_detail.html', {'driver': driver})
-
-
-
-# @login_required
-# def add_driver_to_insurance(request, id_driver):
-#     # Получаем услугу по её ID или возвращаем 404, если услуга не найдена
-#     driver = get_object_or_404(Driver, id=id_driver)
-
-#     # Получаем или создаем черновик заказа для текущего пользователя
-#     current_insurance, created_insurance = Insurance.objects.get_or_create(
-#         creator=request.user, 
-#         status='draft'
-#     )
-
-#     # Проверяем, есть ли услуга уже в текущем заказе
-#     current_driver_insurance, created_driver_insurance = Driver_Insurance.objects.get_or_create(
-#         insurance=current_insurance,
-#         driver=driver,
-#         owner=False,  # Инициализируем количество как 0, если услуги ещё нет
-#     )
-
-#     return redirect('drivers_list')
-
-
-# @login_required
-# def insurance_detail(request, id_insurance):
-    
-#     selected_insurance = get_object_or_404(Insurance, id=id_insurance, creator=request.user)
-
-#     drivers_insurance = Driver_Insurance.objects.filter(insurance=selected_insurance)
-
-#     if selected_insurance.status == 'deleted' :# или insurance.status == 'deleted'
-#         raise Http404("Страховка недоступна")
-    
-
-#     elif not drivers_insurance.exists():
-#         return render(request, 'drivers/insurance_detail.html', {
-#         'insurance':  selected_insurance,
-#         'queryset_drivers_in_insurance': None,
-#         'drivers_insurance':None,
-#         'is_empty_insurance': True,
-#         })
-    
-#     queryset_drivers_in_insurance=[driver_insurance.driver for driver_insurance in drivers_insurance ]
-    
-#     return render(request, 'drivers/insurance_detail.html', {
-#         'insurance':  selected_insurance,
-#         'queryset_drivers_in_insurance': queryset_drivers_in_insurance,
-#         'drivers_insurance': drivers_insurance,
-#         'is_empty_insurance': False,
-#     })
-
-
-# @login_required
-# def update_insurance_status(request, id_insurance):
-#     # Обрабатываем только POST-запросы
-#     if request.method == 'POST':
-#         action = request.POST.get('action')  # Получаем действие (например, завершить или удалить заказ)
-#         # Получаем заказ по ID и проверяем, что он принадлежит текущему пользователю
-#         current_insurance = get_object_or_404(Insurance, id=id_insurance, creator=request.user)
-
-#         # Открываем прямое соединение с базой данных для выполнения SQL-запросов
-#         with connection.cursor() as cursor:
-
-#             if action == 'delete':
-#                 cursor.execute("""
-#                     UPDATE insurance
-#                     SET status = 'deleted'
-#                     WHERE id = %s
-#                 """, [id_insurance])
-#                 print(f"Заказ {current_insurance.id} удален.")
-
-                
-
-#                 # Перенаправляем на список услуг после удаления заказа
-#                 return redirect('drivers_list')
-
-#     # Если запрос не является POST, возвращаем 404
-#     raise Http404("Недопустимый метод запроса")
 
 
         

@@ -14,7 +14,7 @@ SECRET_KEY = 'django-insecure-ix@t&46@(p#rr9(gj&389f*inid_a_or7l0dh7c_$q!vd(1r^$
 DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1',]
-
+AUTH_USER_MODEL = 'drivers.CustomUser'
 # DATABASE_URL=postgres://username:password@localhost:5432/dbname
 # Application definition
 

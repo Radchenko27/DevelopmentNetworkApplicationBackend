@@ -1,0 +1,184 @@
+[
+    {
+        "model": "drivers.driver",
+        "pk": 1,
+        "fields": {
+            "name": "�������� ������� ���������",
+            "certificate_number": "32 12 344234",
+            "license": "B",
+            "experience": 2,
+            "image_url": "http://localhost:9000/drivers/1.png",
+            "characteristics": "������� ��������� � ������� ��������,",
+            "status": "active"
+        }
+    },
+    {
+        "model": "drivers.driver",
+        "pk": 2,
+        "fields": {
+            "name": "���������� ������� �������������",
+            "certificate_number": "67 34 456377",
+            "license": "B, C, M",
+            "experience": 6,
+            "image_url": "http://127.0.0.1:9000/drivers/2.png",
+            "characteristics": "������� ������������� � ������� ��������, ���������� � ��������� �������� ���������������� ���������.",
+            "status": "active"
+        }
+    },
+    {
+        "model": "drivers.driver",
+        "pk": 3,
+        "fields": {
+            "name": "�������� ������ ����������",
+            "certificate_number": "27 76 567887",
+            "license": "A, B, C, M",
+            "experience": 9,
+            "image_url": "http://127.0.0.1:9000/drivers/3.jpg",
+            "characteristics": "������ ���������� � ������� ��������, ���������� � ��������� �������� ���������������� ���������.",
+            "status": "active"
+        }
+    },
+    {
+        "model": "drivers.driver",
+        "pk": 4,
+        "fields": {
+            "name": "������ ������ ��������",
+            "certificate_number": "67 32 356345",
+            "license": "B, C, D, M",
+            "experience": 7,
+            "image_url": "http://127.0.0.1:9000/drivers/4.jpg",
+            "characteristics": "������ �������� � ������� ��������, ���������� � ��������� �������� ���������������� ���������.",
+            "status": "active"
+        }
+    },
+    {
+        "model": "drivers.driver",
+        "pk": 5,
+        "fields": {
+            "name": "���������� �������� ���������",
+            "certificate_number": "98 78 305678",
+            "license": "B, M",
+            "experience": 15,
+            "image_url": "http://127.0.0.1:9000/drivers/5.jpg",
+            "characteristics": "�������� ��������� � ������� ��������, ���������� � ��������� �������� ���������������� ���������.",
+            "status": "active"
+        }
+    },
+    {
+        "model": "drivers.driver",
+        "pk": 8,
+        "fields": {
+            "name": "������ ������ ���������",
+            "certificate_number": "33 78 567898",
+            "license": "A, B, C, D",
+            "experience": 10,
+            "image_url": "http://127.0.0.1:9000/drivers/6.jpg",
+            "characteristics": "��������",
+            "status": "active"
+        }
+    },
+    {
+        "model": "drivers.driver",
+        "pk": 11,
+        "fields": {
+            "name": "�������� ������������ �����",
+            "certificate_number": "32 12 654234",
+            "license": "B",
+            "experience": 2,
+            "image_url": "",
+            "characteristics": "�������� ������������� ������� ��������, � ����������� ������ ������",
+            "status": "active"
+        }
+    },
+    {
+        "model": "drivers.driver",
+        "pk": 12,
+        "fields": {
+            "name": "������ ������ ������������",
+            "certificate_number": "12 50 345678",
+            "license": "A, B",
+            "experience": 12,
+            "image_url": "http://localhost:9000/drivers/12.png",
+            "characteristics": "������ �. �. -  ������� �������� � ����������� ����������.",
+            "status": "active"
+        }
+    },
+    {
+        "model": "drivers.driver",
+        "pk": 13,
+        "fields": {
+            "name": "������ �������� ������������",
+            "certificate_number": "12 50 345632",
+            "license": "A, B",
+            "experience": 10,
+            "image_url": "",
+            "characteristics": "������ �. �. - ����� ������� �������� � ������� ����������",
+            "status": "active"
+        }
+    },
+    {
+        "model": "drivers.driver",
+        "pk": 14,
+        "fields": {
+            "name": "����� �������� ������������",
+            "certificate_number": "12 49 345632",
+            "license": "A, B",
+            "experience": 10,
+            "image_url": "http://localhost:9000/drivers/14.png",
+            "characteristics": "����� �������� ������������ - ����� ������� �������� � ������� ����������",
+            "status": "deleted"
+        }
+    },
+    {
+        "model": "drivers.driver",
+        "pk": 15,
+        "fields": {
+            "name": "����� ������ ������������",
+            "certificate_number": "12 49 350032",
+            "license": "A, B",
+            "experience": 10,
+            "image_url": "http://localhost:9000/drivers/15.png",
+            "characteristics": "����� ������ ������������ - ����� ������� �������� � ������� ����������",
+            "status": "deleted"
+        }
+    },
+    {
+        "model": "drivers.driver",
+        "pk": 16,
+        "fields": {
+            "name": "string",
+            "certificate_number": "75 55 156671",
+            "license": "B",
+            "experience": 21,
+            "image_url": "",
+            "characteristics": "string",
+            "status": "active"
+        }
+    },
+    {
+        "model": "drivers.driver",
+        "pk": 17,
+        "fields": {
+            "name": "����� �������� �������������",
+            "certificate_number": "12 49 311112",
+            "license": "A, B",
+            "experience": 10,
+            "image_url": "",
+            "characteristics": "����� �������� ������������� - ����� ������� �������� � ������� ����������",
+            "status": "deleted"
+        }
+    },
+    {
+        "model": "drivers.driver",
+        "pk": 18,
+        "fields": {
+            "name": "string",
+            "certificate_number": "37 74 719336",
+            "license": "A",
+            "experience": 21,
+            "image_url": "",
+            "characteristics": "string",
+            "status": "active"
+        }
+    }
+]

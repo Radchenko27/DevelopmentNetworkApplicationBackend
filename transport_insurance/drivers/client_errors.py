@@ -3,8 +3,6 @@ from rest_framework.exceptions import APIException
 from rest_framework import status
 
 
-
-
 class ErrorCodes(Enum):
     SESSION_ID_MISSING = (400, 'sessionid не предоставлен.', status.HTTP_400_BAD_REQUEST)
     USER_ID_NOT_FOUND_BY_SESSION = (401, 'Неверный sessionid или сессия истекла. Попробуйте заново авторизоваться.', status.HTTP_401_UNAUTHORIZED)

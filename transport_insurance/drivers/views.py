@@ -1,6 +1,6 @@
 from django.shortcuts import render,  get_object_or_404, redirect
 from .models import *
-from .serializers import DriverInsuranceSerializers, DriverSerializer, InsuranceSerializer
+from .serializers import DriverInsuranceSerializers, DriverSerializer, InsuranceSerializer, CustomUserSerializer
 from django.db import models, connection
 from django.contrib.auth import authenticate, login, logout 
 from django.contrib.auth.decorators import login_required
@@ -21,13 +21,13 @@ from drf_yasg import openapi
 import logging
 from .permissions import *
 from .redis_client import *
-
+import uuid
 
 
 
 # SINGLITON_USER = User(id=1, username='admin')
 # SINGLETON_MANAGER = User(id=2, username="manager")
-
+redis_client = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT)
 
 def get_current_user():
     """Получаем текущего пользователя (мокового пользователя)"""
@@ -667,14 +667,31 @@ def update_driver_owner_in_insurance(request, id_insurance, id_driver):
 logger = logging.getLogger(__name__)
 
 
+
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'email': openapi.Schema(type=openapi.TYPE_STRING, description='Email пользователя'),
+            'password': openapi.Schema(type=openapi.TYPE_STRING, description='Пароль пользователя'),
+        },
+        required=['email', 'password']
+    ),
+    responses={
+        200: openapi.Response('Успешный вход', ),
+        401: 'Неверный email или пароль.'
+    },
+    operation_summary="Вход пользователя",
+    operation_description="Аутентификация пользователя по email и паролю."
+)
 @api_view(['POST'])
 @permission_classes([AllowAny])  # Для входа без ограничений
 def login_user(request):
     email = request.data.get('email')
     password = request.data.get('password')
 
-    # Логирование попытки входа
-    logger.info(f"Попытка входа пользователя с email: {email}")
+    logger.info(f"Попытка входа пользователя с email: {request.data.get('email')}")
 
     user = authenticate(request, email=email, password=password)
     
@@ -682,16 +699,17 @@ def login_user(request):
         # Вход пользователя
         login(request, user)
 
-        # Генерация уникального идентификатора сессии
-        session_id = request.session.session_key
+        session_id = str(uuid.uuid4())
         
-        if session_id:  # Проверяем, что session_id не None
-            # Сохранение ID пользователя в Redis с ключом session_id
-            # redis_client.set(session_id, user.id, ex=3600)  # Сохраняем ID пользователя с TTL 1 час
+        if session_id:  
+            redis_client.set(session_id, user.id, ex=3600)  # Сохраняем ID пользователя с TTL 1 час
             
             logger.info(f"Сессия сохранена в Redis для пользователя с email: {email}, session_id: {session_id}")
 
-            return Response({'session_id': session_id}, status=status.HTTP_200_OK)
+            # return Response({'session_id': session_id}, status=status.HTTP_200_OK).set_cookie("session_id", session_id, path="/", httponly=True, secure=True)
+            response = Response({'sessionid': session_id}, status=status.HTTP_200_OK)
+            response.set_cookie("sessionid", session_id, path="/", httponly=True, secure=True)
+            return response
         else:
             logger.error("Не удалось получить session_id.")
             return Response({'detail': 'Ошибка создания сессии.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -701,37 +719,86 @@ def login_user(request):
 
 
 
+@swagger_auto_schema(
+    method='post',
+    request_body=CustomUserSerializer,
+    responses={
+        201: 'Пользователь успешно зарегистрирован', 
+        400: 'Ошибка валидации данных'
+    },
+    operation_summary="Регистрация пользователя",
+    operation_description="Создает нового пользователя с указанными данными."
+)
 @csrf_exempt
 @api_view(['POST'])
 def register_user(request):
-    data = request.data
-    username = data.get('username')
-    password = data.get('password')
-    email = data.get('email')
+    serializer = CustomUserSerializer(data=request.data)
+    if serializer.is_valid():
+        user = serializer.save()
+        return Response({'message': 'Пользователь успешно зарегистрирован.'}, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    if  get_user_model.objects.filter(username=username).exists():
-        return Response({'error': 'Пользователь с таким именем уже существует'}, status=status.HTTP_400_BAD_REQUEST)
+    
 
-    if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-        return Response({'error': 'Неверный формат email'}, status=status.HTTP_400_BAD_REQUEST)
-
-    user = get_user_model.objects.create_user(username=username, password=password, email=email)
-    return Response({'message': 'Пользователь успешно зарегистрирован'}, status=status.HTTP_201_CREATED)
-
-
+@swagger_auto_schema(
+    method='put',
+    request_body=CustomUserSerializer,
+    responses={
+        200: 'Информация о пользователе успешно обновлена',
+        404: 'Пользователь не найден.',
+        400: 'Ошибка валидации данных'
+    },
+    operation_summary="Обновление информации о пользователе",
+    operation_description="Частично обновляет данные пользователя."
+)
 @csrf_exempt
 @api_view(['PUT'])
-def update_user(request, pk):
-    user = get_object_or_404( get_user_model, id=pk)
-    data = request.data
+def update_user(request, id_user):
+    user = None   
+    try:
+        redis_client = RedisClient(request)
+        # Проверяем, является ли пользователь сотрудником и получаем объект пользователя
+        user = redis_client.is_user()
+    except CustomAPIException as e:
+        return Response({"error": str(e)}, status=e.status_code) 
+    
+    if str(user.id) != str(id_user):
+        logger.warning("Пользователь пытается обновить данные о другом пользователя.")
+        return Response({'detail': 'Вы можете обновить только свои собственные данные.'}, status=status.HTTP_403_FORBIDDEN)
+    
+    serializer = CustomUserSerializer(user, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({'message': 'Информация о пользователе успешно обновлена'}, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
-    user.username = data.get('username', user.username)
-    user.email = data.get('email', user.email)
-    if 'password' in data:
-        user.set_password(data['password'])
-    user.save()
 
-    return Response({'message': 'Информация о пользователе успешно обновлена'}, status=status.HTTP_200_OK)
+@swagger_auto_schema(
+    method='post',
+    responses={
+        200: 'Успешный выход из системы',
+        401: 'Отсутствует идентификатор сессии.'
+    },
+    operation_summary="Выход пользователя",
+    operation_description="Разлогинивает пользователя."
+)
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def logout_user(request):
+    try:
+        redis_client = RedisClient(request)
+        # Проверяем, является ли пользователь сотрудником и получаем объект пользователя
+        user = redis_client.is_user()
+    except CustomAPIException as e:
+        return Response({"error": str(e)}, status=e.status_code) 
+    
+    redis_client.delete(redis_client.session_id)
+    logout(request)
+    return Response({'message': 'Пользователь успешно вышел из системы'}, status=status.HTTP_200_OK)
+
+
 
 # @csrf_exempt
 # @api_view(['POST'])
@@ -745,16 +812,6 @@ def update_user(request, pk):
 #         login(request, user)
 #         return Response({'message': 'Пользователь успешно вошел в систему'}, status=status.HTTP_200_OK)
 #     return Response({'error': 'Неверное имя пользователя или пароль'}, status=status.HTTP_401_UNAUTHORIZED)
-
-@csrf_exempt
-@api_view(['POST'])
-def logout_user(request):
-    logout(request)
-    return Response({'message': 'Пользователь успешно вышел из системы'}, status=status.HTTP_200_OK)
-
-
-
-
 
 
         

@@ -1,0 +1,209 @@
+[
+    {
+        "model": "drivers.driver_insurance",
+        "pk": 1,
+        "fields": {
+            "driver": 1,
+            "insurance": 1,
+            "owner": false
+        }
+    },
+    {
+        "model": "drivers.driver_insurance",
+        "pk": 2,
+        "fields": {
+            "driver": 2,
+            "insurance": 1,
+            "owner": false
+        }
+    },
+    {
+        "model": "drivers.driver_insurance",
+        "pk": 3,
+        "fields": {
+            "driver": 3,
+            "insurance": 1,
+            "owner": true
+        }
+    },
+    {
+        "model": "drivers.driver_insurance",
+        "pk": 4,
+        "fields": {
+            "driver": 1,
+            "insurance": 4,
+            "owner": false
+        }
+    },
+    {
+        "model": "drivers.driver_insurance",
+        "pk": 5,
+        "fields": {
+            "driver": 2,
+            "insurance": 4,
+            "owner": false
+        }
+    },
+    {
+        "model": "drivers.driver_insurance",
+        "pk": 6,
+        "fields": {
+            "driver": 2,
+            "insurance": 5,
+            "owner": false
+        }
+    },
+    {
+        "model": "drivers.driver_insurance",
+        "pk": 7,
+        "fields": {
+            "driver": 1,
+            "insurance": 5,
+            "owner": false
+        }
+    },
+    {
+        "model": "drivers.driver_insurance",
+        "pk": 8,
+        "fields": {
+            "driver": 3,
+            "insurance": 5,
+            "owner": false
+        }
+    },
+    {
+        "model": "drivers.driver_insurance",
+        "pk": 9,
+        "fields": {
+            "driver": 4,
+            "insurance": 5,
+            "owner": false
+        }
+    },
+    {
+        "model": "drivers.driver_insurance",
+        "pk": 10,
+        "fields": {
+            "driver": 2,
+            "insurance": 7,
+            "owner": false
+        }
+    },
+    {
+        "model": "drivers.driver_insurance",
+        "pk": 11,
+        "fields": {
+            "driver": 1,
+            "insurance": 7,
+            "owner": false
+        }
+    },
+    {
+        "model": "drivers.driver_insurance",
+        "pk": 12,
+        "fields": {
+            "driver": 2,
+            "insurance": 9,
+            "owner": false
+        }
+    },
+    {
+        "model": "drivers.driver_insurance",
+        "pk": 13,
+        "fields": {
+            "driver": 3,
+            "insurance": 9,
+            "owner": false
+        }
+    },
+    {
+        "model": "drivers.driver_insurance",
+        "pk": 14,
+        "fields": {
+            "driver": 1,
+            "insurance": 10,
+            "owner": false
+        }
+    },
+    {
+        "model": "drivers.driver_insurance",
+        "pk": 15,
+        "fields": {
+            "driver": 1,
+            "insurance": 11,
+            "owner": false
+        }
+    },
+    {
+        "model": "drivers.driver_insurance",
+        "pk": 16,
+        "fields": {
+            "driver": 2,
+            "insurance": 11,
+            "owner": false
+        }
+    },
+    {
+        "model": "drivers.driver_insurance",
+        "pk": 17,
+        "fields": {
+            "driver": 1,
+            "insurance": 13,
+            "owner": true
+        }
+    },
+    {
+        "model": "drivers.driver_insurance",
+        "pk": 18,
+        "fields": {
+            "driver": 3,
+            "insurance": 13,
+            "owner": false
+        }
+    },
+    {
+        "model": "drivers.driver_insurance",
+        "pk": 20,
+        "fields": {
+            "driver": 1,
+            "insurance": 15,
+            "owner": true
+        }
+    },
+    {
+        "model": "drivers.driver_insurance",
+        "pk": 22,
+        "fields": {
+            "driver": 14,
+            "insurance": 15,
+            "owner": false
+        }
+    },
+    {
+        "model": "drivers.driver_insurance",
+        "pk": 23,
+        "fields": {
+            "driver": 15,
+            "insurance": 16,
+            "owner": true
+        }
+    },
+    {
+        "model": "drivers.driver_insurance",
+        "pk": 24,
+        "fields": {
+            "driver": 1,
+            "insurance": 16,
+            "owner": false
+        }
+    },
+    {
+        "model": "drivers.driver_insurance",
+        "pk": 25,
+        "fields": {
+            "driver": 1,
+            "insurance": 17,
+            "owner": false
+        }
+    }
+]

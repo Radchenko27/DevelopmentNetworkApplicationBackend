@@ -1,8 +1,7 @@
 from rest_framework import serializers
 from .models import  Insurance, Driver, Driver_Insurance, CustomUser
-
-
-
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth import authenticate
 # class AuthUserSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = AuthUser
@@ -60,7 +59,21 @@ class CustomUserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ['email', 'password', 'is_staff', 'is_superuser']
 
+    def create(self, validated_data):
+    # Хешируем пароль перед сохранением
+        validated_data['password'] = make_password(validated_data['password'])
+        return super().create(validated_data)
 
-
+    # Метод для обновления пользователя
+    def update(self, instance, validated_data):
+        if 'password' in validated_data:
+            validated_data['password'] = make_password(validated_data['password'])
+        return super().update(instance, validated_data)
+    
+    def authenticate_user(self, username, password):
+        user = authenticate(username=username, password=password)
+        if user is None:
+            raise serializers.ValidationError("Invalid username or password.")
+        return user
 
          

@@ -29,7 +29,7 @@ urlpatterns = [
     path('users/register/', register_user, name='register-user'),
     path('users/login/', login_user, name='login-user'),
     path('users/logout/', logout_user, name='logout-user'),
-    path('users/update/<int:pk>/', update_user, name='update-user'),
+    path('users/update/<int:id_user>/', update_user, name='update-user'),
 
 ]
 # path('', views.drivers_list, name='drivers_list'), 

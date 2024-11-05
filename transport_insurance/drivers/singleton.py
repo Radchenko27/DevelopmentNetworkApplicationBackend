@@ -1,10 +1,9 @@
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
-
+from django.contrib.auth import get_user_model
 
 class UserSingleton:
     _instance = None
-
     @classmethod
     def get_instance(cls):
         """Получаем единственный экземпляр класса."""
@@ -16,7 +15,7 @@ class UserSingleton:
     def _create_users(cls):
         """Создаем пользователей."""
        
-        creator, _ = User.objects.get_or_create(
+        creator, _ = get_user_model.objects.get_or_create(
             id=3,
             defaults={
                 'username': "creator_user",
@@ -32,7 +31,7 @@ class UserSingleton:
         creator.save()
 
        
-        moderator, _ = User.objects.get_or_create(
+        moderator, _ = get_user_model.objects.get_or_create(
             id=2,
             defaults={
                 'username': "moderator_user",

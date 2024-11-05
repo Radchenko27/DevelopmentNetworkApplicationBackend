@@ -20,6 +20,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 import logging
 from .permissions import *
+from .redis_client import *
 
 
 
@@ -32,14 +33,14 @@ def get_current_user():
     """Получаем текущего пользователя (мокового пользователя)"""
     mock_user = get_mock_user()
 
-    if not isinstance(mock_user, User):
+    if not isinstance(mock_user, get_user_model):
         raise ValueError("Неверный пользователь")
     return mock_user
 
 
 def get_current_user_moderator():
     mock_user_moderator = get_mock_user_moderator()
-    if not isinstance( mock_user_moderator, User):
+    if not isinstance( mock_user_moderator, get_user_model):
         raise ValueError("Неверный пользователь")
     return mock_user_moderator
 
@@ -131,6 +132,14 @@ def driver_detail(request, id_driver):
 )
 @api_view(['PUT'])
 def driver_update(request, id_driver):
+    user = None   
+    try:
+        redis_client = RedisClient(request)
+        # Проверяем, является ли пользователь сотрудником и получаем объект пользователя
+        user = redis_client.is_user_staff()
+    except CustomAPIException as e:
+        return Response({"error": str(e)}, status=e.status_code)
+    
     driver = get_object_or_404(Driver.objects.exclude(status='deleted'), id=id_driver)
     driver_serializer = DriverSerializer(driver, data=request.data, partial=True)
     
@@ -150,6 +159,14 @@ def driver_update(request, id_driver):
 )
 @api_view(['DELETE']) 
 def driver_delete(request, id_driver):
+    user = None   
+    try:
+        redis_client = RedisClient(request)
+        # Проверяем, является ли пользователь сотрудником и получаем объект пользователя
+        user = redis_client.is_user_staff()
+    except CustomAPIException as e:
+        return Response({"error": str(e)}, status=e.status_code)
+    
     driver = get_object_or_404(Driver, id=id_driver)
 
     if driver.status == 'deleted':
@@ -182,6 +199,13 @@ def driver_delete(request, id_driver):
 )
 @api_view(['POST'])    
 def driver_add(request):
+    user = None   
+    try:
+        redis_client = RedisClient(request)
+        # Проверяем, является ли пользователь сотрудником и получаем объект пользователя
+        user = redis_client.is_user_staff()
+    except CustomAPIException as e:
+        return Response({"error": str(e)}, status=e.status_code)
     # Логика для создания нового водителя 
     driver_serializer = DriverSerializer(data=request.data)
     if driver_serializer.is_valid():
@@ -208,6 +232,13 @@ def driver_add(request):
 )
 @api_view(['POST'])
 def driver_add_image(request, id_driver):
+    user = None   
+    try:
+        redis_client = RedisClient(request)
+        # Проверяем, является ли пользователь сотрудником и получаем объект пользователя
+        user = redis_client.is_user_staff()
+    except CustomAPIException as e:
+        return Response({"error": str(e)}, status=e.status_code)
     driver = get_object_or_404(Driver.objects.exclude(status='deleted'), id=id_driver)
 
     if driver.status == 'deleted':
@@ -243,13 +274,19 @@ def driver_add_image(request, id_driver):
 )
 @api_view(['POST'])
 def driver_add_to_draft(request, id_driver):
+   
     try:
-        mock_user = get_current_user()  # Используем внешнюю функцию
-    except ValueError as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        redis_client = RedisClient(request)
+        # Проверяем, является ли пользователь сотрудником и получаем объект пользователя
+        user, is_staff = redis_client.is_user_staff(flag=True)
+    except CustomAPIException as e:
+        return Response({"error": str(e)}, status=e.status_code)
+    else:
+        if is_staff:
+            return Response({'error': 'Администратор не имеет право добавлять водителя в страховку.'}, status=status.HTTP_403_FORBIDDEN)
     
     driver = get_object_or_404(Driver.objects.exclude(status='deleted'), id=id_driver)
-    current_insurance, created = Insurance.objects.get_or_create(creator=mock_user, status='draft')
+    current_insurance, created = Insurance.objects.get_or_create(creator=user, status='draft')
 
     if not Driver_Insurance.objects.filter(driver=driver, insurance=current_insurance).exists():
         created_driver_insurance = Driver_Insurance.objects.create(
@@ -286,11 +323,23 @@ def driver_add_to_draft(request, id_driver):
 )
 @api_view(['GET'])
 def insurances_list(request):
+
+    insurances = Insurance.objects.exclude(status__in=['draft', 'deleted'])
+    
+    user = None   
+    try:
+        redis_client = RedisClient(request)
+        # Проверяем, является ли пользователь сотрудником и получаем объект пользователя
+        user, is_staff = redis_client.is_user_staff(flag=True)
+    except CustomAPIException as e:
+        return Response({"error": str(e)}, status=e.status_code)
+    else:
+        if not is_staff:
+            insurances = insurances.filter(creator_id=user.id)
+
     insurance_status = request.GET.get('insurance_status')
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
-
-    insurances = Insurance.objects.exclude(status__in=['draft', 'deleted'])
 
     if insurance_status:
         insurances = insurances.filter(status=insurance_status)
@@ -316,11 +365,25 @@ def insurances_list(request):
 )
 @api_view(['GET'])
 def insurance_detail(request, id_insurance):
+    user = None  
+    is_staff = None 
+    try:
+        redis_client = RedisClient(request)
+        # Проверяем, является ли пользователь сотрудником и получаем объект пользователя
+        user, is_staff = redis_client.is_user_staff(flag=True)
+    except CustomAPIException as e:
+        return Response({"error": str(e)}, status=e.status_code)
+    
+
     insurance = get_object_or_404(Insurance, id=id_insurance)
 
     if insurance.status == 'deleted' :
         return Response({'error': 'Страховка не найдена'}, status=status.HTTP_404_NOT_FOUND)
 
+    if not is_staff:
+        if str(insurance.creator.id) != str(user.id):
+            return Response({'error': 'У вас нет прав на просмотр этой страховки.'}, status=status.HTTP_403_FORBIDDEN)
+    
     insurance_serializer = InsuranceSerializer(insurance).data
     return Response(insurance_serializer, status=status.HTTP_200_OK)
 
@@ -334,8 +397,21 @@ def insurance_detail(request, id_insurance):
 )
 @api_view(['DELETE'])
 def insurance_delete(request, id_insurance):
+    user = None   
+    try:
+        redis_client = RedisClient(request)
+        # Проверяем, является ли пользователь сотрудником и получаем объект пользователя
+        user, is_staff = redis_client.is_user_staff(flag=True)
+    except CustomAPIException as e:
+        return Response({"error": str(e)}, status=e.status_code)
+    else:
+        if is_staff:
+            return Response({'error': 'Администратор не имеет право удалять страховку.'}, status=status.HTTP_403_FORBIDDEN)
+    
     insurance = get_object_or_404(Insurance, id=id_insurance)
 
+    if str(insurance.creator.id) != str(user.id):
+        return Response({'error': 'У вас нет прав на удаление этой страховки.'}, status=status.HTTP_403_FORBIDDEN)
     if insurance.status == 'deleted':
         return Response({'error': 'Страховка уже удалена'}, status=status.HTTP_404_NOT_FOUND)
     
@@ -360,8 +436,22 @@ def insurance_delete(request, id_insurance):
 @api_view(['PUT'])
 def insurance_update(request, id_insurance):
 
+    user = None   
+    try:
+        redis_client = RedisClient(request)
+        # Проверяем, является ли пользователь сотрудником и получаем объект пользователя
+        user, is_staff = redis_client.is_user_staff(flag=True)
+    except CustomAPIException as e:
+        return Response({"error": str(e)}, status=e.status_code)
+    else:
+        if is_staff:
+            return Response({'error': 'Администратор не имеет право формировать страховку.'}, status=status.HTTP_403_FORBIDDEN)
+    
     insurance = get_object_or_404(Insurance, id=id_insurance)
 
+    if str(insurance.creator.id) != str(user.id):
+        return Response({'error': 'У вас нет прав на обновление этой страховки.'}, status=status.HTTP_403_FORBIDDEN)
+    
     if insurance.status == 'deleted':
         return Response({'error': 'Обновление удалённых страховок невозможно.'}, status=status.HTTP_400_BAD_REQUEST)
    
@@ -385,7 +475,21 @@ def insurance_update(request, id_insurance):
 )
 @api_view(['PUT'])
 def insurance_submit(request, id_insurance):
+    user = None   
+    try:
+        redis_client = RedisClient(request)
+        # Проверяем, является ли пользователь сотрудником и получаем объект пользователя
+        user, is_staff = redis_client.is_user_staff(flag=True)
+    except CustomAPIException as e:
+        return Response({"error": str(e)}, status=e.status_code)
+    else:
+        if is_staff:
+            return Response({'error': 'Администратор не имеет право формировать страховку.'}, status=status.HTTP_403_FORBIDDEN)
+    
     insurance = get_object_or_404(Insurance, id=id_insurance)
+
+    if str(insurance.creator.id) != str(user.id):
+        return Response({'error': 'У вас нет прав на формирование этой страховки.'}, status=status.HTTP_403_FORBIDDEN)
 
     if insurance.status != 'draft':
         return Response({'error': 'Страховка не в статусе черновика. Проверьте статус.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -423,12 +527,15 @@ def insurance_submit(request, id_insurance):
 )
 @api_view(['PUT']) #нужен модератор
 def insurance_finalize(request, id_insurance):
+    user = None   
     try:
-        mock_user_moderator = get_current_user_moderator()  # Используем внешнюю функцию
-    except ValueError as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        redis_client = RedisClient(request)
+        # Проверяем, является ли пользователь сотрудником и получаем объект пользователя
+        user = redis_client.is_user_staff()
+    except CustomAPIException as e:
+        return Response({"error": str(e)}, status=e.status_code)
     
-    insurance = get_object_or_404( Insurance,id=id_insurance)
+    insurance = get_object_or_404(Insurance,id=id_insurance)
 
     if insurance.status == 'deleted':
         return Response({'error': 'Страховка удалена и не может быть завершена'}, status=status.HTTP_400_BAD_REQUEST)
@@ -445,7 +552,7 @@ def insurance_finalize(request, id_insurance):
         insurance.status = 'rejected'
         insurance.completion_date = timezone.now()
 
-    insurance.moderator = mock_user_moderator
+    insurance.moderator = user
     insurance.date_completion = timezone.now()
     insurance.save()
     insurance_serializer = InsuranceSerializer(insurance).data
@@ -465,8 +572,23 @@ def insurance_finalize(request, id_insurance):
 )
 @api_view(['DELETE'])
 def delete_driver_from_insurance(request, id_insurance, id_driver):
+    user = None   
+    try:
+        redis_client = RedisClient(request)
+        # Проверяем, является ли пользователь сотрудником и получаем объект пользователя
+        user = redis_client.is_user()
+    except CustomAPIException as e:
+        return Response({"error": str(e)}, status=e.status_code)
+    
     insurance = get_object_or_404(Insurance, id=id_insurance)
+            
+    if insurance.status != 'draft':
+        return Response({'error': 'Страховка не может быть изменена, так как она не в статусе draft.'}, status=status.HTTP_400_BAD_REQUEST)
 
+    # Проверяем, является ли пользователь создателем страховка
+    if str(insurance.creator.id) != str(user.id):
+        return Response({'error': 'У вас нет прав на удаление водителей в этой страховке.'}, status=status.HTTP_403_FORBIDDEN)
+    
     if insurance.status == 'deleted':
         return Response({'error': 'Страховка удалена, нельзя удалить водителя'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -500,10 +622,25 @@ def delete_driver_from_insurance(request, id_insurance, id_driver):
 )
 @api_view(['PUT'])
 def update_driver_owner_in_insurance(request, id_insurance, id_driver):
+    user = None   
+    try:
+        redis_client = RedisClient(request)
+        # Проверяем, является ли пользователь сотрудником и получаем объект пользователя
+        user = redis_client.is_user()
+    except CustomAPIException as e:
+        return Response({"error": str(e)}, status=e.status_code)
+    
     insurance = get_object_or_404(Insurance, id=id_insurance)
-    driver = get_object_or_404(Driver, id=id_driver)
 
+    if insurance.status != 'draft':
+        return Response({'error': 'Страховка не может быть изменена, так как она не в статусе draft.'}, status=status.HTTP_400_BAD_REQUEST)
+    # Проверяем, является ли пользователь создателем страховка
+    if str(insurance.creator.id) != str(user.id):
+        return Response({'error': 'У вас нет прав на изменение владельца страховки.'}, status=status.HTTP_403_FORBIDDEN)
+    
+    driver = get_object_or_404(Driver, id=id_driver)
     driver_to_insurance = get_object_or_404(Driver_Insurance, driver=driver, insurance=insurance)
+    
     if driver_to_insurance:
         data = request.data
         owner = bool(data.get('owner'))
@@ -572,20 +709,20 @@ def register_user(request):
     password = data.get('password')
     email = data.get('email')
 
-    if User.objects.filter(username=username).exists():
+    if  get_user_model.objects.filter(username=username).exists():
         return Response({'error': 'Пользователь с таким именем уже существует'}, status=status.HTTP_400_BAD_REQUEST)
 
     if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
         return Response({'error': 'Неверный формат email'}, status=status.HTTP_400_BAD_REQUEST)
 
-    user = User.objects.create_user(username=username, password=password, email=email)
+    user = get_user_model.objects.create_user(username=username, password=password, email=email)
     return Response({'message': 'Пользователь успешно зарегистрирован'}, status=status.HTTP_201_CREATED)
 
 
 @csrf_exempt
 @api_view(['PUT'])
 def update_user(request, pk):
-    user = get_object_or_404(User, id=pk)
+    user = get_object_or_404( get_user_model, id=pk)
     data = request.data
 
     user.username = data.get('username', user.username)

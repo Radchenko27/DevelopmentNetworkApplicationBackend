@@ -1,8 +1,8 @@
 from django.db import models
 from django.core.validators import RegexValidator, MinValueValidator
 from django.utils import timezone
-from django.contrib.auth.models import User, BaseUserManager, AbstractBaseUser, PermissionsMixin
-
+from django.contrib.auth.models import  BaseUserManager, AbstractBaseUser, PermissionsMixin
+from django.conf import settings
 # Create your models here.
 
 
@@ -121,9 +121,9 @@ class Insurance(models.Model):
                     )
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft', verbose_name='Статус')
     # Связь с пользователем, который создал заказ (удаление пользователя приведет к удалению всех его заказов)
-    creator = models.ForeignKey(User, related_name='insurance_created', on_delete=models.CASCADE)
+    creator = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='insurance_created', on_delete=models.CASCADE)
     # Связь с пользователем-модератором, который может редактировать или завершать заказ (при удалении модератора связь будет установлена в NULL)
-    moderator = models.ForeignKey(User, related_name='insurance_moderated', on_delete=models.SET_NULL, null=True, blank=True)
+    moderator = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='insurance_moderated', on_delete=models.SET_NULL, null=True, blank=True)
 
     average_experience = models.IntegerField(verbose_name='Среднее значение опыта вождения', validators=[MinValueValidator(0)], null=True, blank=True, )
 

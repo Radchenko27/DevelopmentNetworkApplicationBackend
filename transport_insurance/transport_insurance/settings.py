@@ -2,7 +2,7 @@
 from pathlib import Path
 import os
 import logging.config
-
+import redis
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -13,7 +13,7 @@ SECRET_KEY = 'django-insecure-ix@t&46@(p#rr9(gj&389f*inid_a_or7l0dh7c_$q!vd(1r^$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1',]
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 AUTH_USER_MODEL = 'drivers.CustomUser'
 # DATABASE_URL=postgres://username:password@localhost:5432/dbname
 # Application definition
@@ -63,7 +63,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'transport_insurance.wsgi.application'
 
+REDIS_HOST = '0.0.0.0'
+REDIS_PORT = 6379
 
+REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+redis_client = redis.StrictRedis.from_url(REDIS_URL, decode_responses=True)
 
 DATABASES = {
     # 'default': {

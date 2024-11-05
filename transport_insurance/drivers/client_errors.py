@@ -4,7 +4,7 @@ from rest_framework import status
 
 
 class ErrorCodes(Enum):
-    SESSION_ID_MISSING = (400, 'sessionid не предоставлен.', status.HTTP_400_BAD_REQUEST)
+    SESSION_ID_MISSING = (401, 'session_id не предоставлен.', status.HTTP_401_UNAUTHORIZED)
     USER_ID_NOT_FOUND_BY_SESSION = (401, 'Неверный sessionid или сессия истекла. Попробуйте заново авторизоваться.', status.HTTP_401_UNAUTHORIZED)
     USER_NOT_PERMISSION = (403,  'Доступ запрещен. Необходимы права администратора.', status.HTTP_403_FORBIDDEN)
     USER_NOT_FOUND = (404, 'Пользователь не найден.', status.HTTP_404_NOT_FOUND)

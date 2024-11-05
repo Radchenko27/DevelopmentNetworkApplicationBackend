@@ -12,13 +12,14 @@ class RedisClient():
     def __init__(self, request):
         self.request = request
         self.redis_client = redis_client
-        self.session_id = self.request.COOKIES.get('sessionid')
+        self.session_id = self.request.COOKIES.get('session_id')
         if not self.session_id:
             raise CustomAPIException(ErrorCodes.SESSION_ID_MISSING)
     
     
     def get_user_id_from_session(self):
-        user_id = self.redis_client.get(self.session_id)
+        user_id = redis_client.get(self.session_id)
+        print(user_id, self.session_id)
         if user_id is None:
             raise CustomAPIException(ErrorCodes.USER_ID_NOT_FOUND_BY_SESSION)
         return user_id.decode('utf-8') if isinstance(user_id, bytes) else user_id
@@ -35,7 +36,7 @@ class RedisClient():
     
     def is_user_staff(self, flag=False):
         """Проверяет, является ли пользователь сотрудником (is_staff)."""
-        user = self.get_user()
+        user = self.is_user()
         if not user.is_staff and not user.is_superuser:
             if not flag:
                 raise CustomAPIException(ErrorCodes.USER_NOT_PERMISSION) 

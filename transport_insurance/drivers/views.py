@@ -22,12 +22,12 @@ import logging
 from .permissions import *
 from .redis_client import *
 import uuid
-
+from django.http import JsonResponse
 
 
 # SINGLITON_USER = User(id=1, username='admin')
 # SINGLETON_MANAGER = User(id=2, username="manager")
-redis_client = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT)
+redis_client_connection = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT)
 
 def get_current_user():
     """Получаем текущего пользователя (мокового пользователя)"""
@@ -552,7 +552,7 @@ def insurance_finalize(request, id_insurance):
         insurance.status = 'rejected'
         insurance.completion_date = timezone.now()
 
-    insurance.moderator = user
+    insurance.moderator = user[0]
     insurance.date_completion = timezone.now()
     insurance.save()
     insurance_serializer = InsuranceSerializer(insurance).data
@@ -702,13 +702,13 @@ def login_user(request):
         session_id = str(uuid.uuid4())
         
         if session_id:  
-            redis_client.set(session_id, user.id, ex=3600)  # Сохраняем ID пользователя с TTL 1 час
+            redis_client_connection.set(session_id, user.id, ex=3600)  # Сохраняем ID пользователя с TTL 1 час
             
             logger.info(f"Сессия сохранена в Redis для пользователя с email: {email}, session_id: {session_id}")
 
             # return Response({'session_id': session_id}, status=status.HTTP_200_OK).set_cookie("session_id", session_id, path="/", httponly=True, secure=True)
-            response = Response({'sessionid': session_id}, status=status.HTTP_200_OK)
-            response.set_cookie("sessionid", session_id, path="/", httponly=True, secure=True)
+            response = Response({'session_id': session_id}, status=status.HTTP_200_OK)
+            response.set_cookie("session_id", session_id, path="/", samesite="Lax")
             return response
         else:
             logger.error("Не удалось получить session_id.")
@@ -794,7 +794,7 @@ def logout_user(request):
     except CustomAPIException as e:
         return Response({"error": str(e)}, status=e.status_code) 
     
-    redis_client.delete(redis_client.session_id)
+    redis_client_connection.delete(redis_client.session_id)
     logout(request)
     return Response({'message': 'Пользователь успешно вышел из системы'}, status=status.HTTP_200_OK)
 

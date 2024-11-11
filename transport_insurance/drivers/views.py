@@ -268,7 +268,7 @@ def driver_add_image(request, id_driver):
 @swagger_auto_schema(
     method='post',
     request_body=DriverSerializer,
-    responses={200: DriverSerializer, 400: "Ошибка в запросе. Невозможно добавить водителя.", 404: "Водитель не найден."},
+    responses={200: InsuranceSerializer, 400: "Ошибка в запросе. Невозможно добавить водителя.", 404: "Водитель не найден."},
     operation_summary="Добавить водителя в страховку",
     operation_description="Добавляет активного водителя в страховку."
 )
@@ -708,7 +708,7 @@ def login_user(request):
 
             # return Response({'session_id': session_id}, status=status.HTTP_200_OK).set_cookie("session_id", session_id, path="/", httponly=True, secure=True)
             response = Response({'session_id': session_id}, status=status.HTTP_200_OK)
-            response.set_cookie("session_id", session_id, path="/", samesite="Lax")
+            response.set_cookie("session_id", session_id, samesite="Lax")
             return response
         else:
             logger.error("Не удалось получить session_id.")

@@ -29,22 +29,20 @@ from django.http import JsonResponse
 # SINGLETON_MANAGER = User(id=2, username="manager")
 redis_client_connection = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT)
 
-def get_current_user():
-    """Получаем текущего пользователя (мокового пользователя)"""
-    mock_user = get_mock_user()
+# def get_current_user():
+#     """Получаем текущего пользователя (мокового пользователя)"""
+#     mock_user = get_mock_user()
 
-    if not isinstance(mock_user, get_user_model):
-        raise ValueError("Неверный пользователь")
-    return mock_user
-
-
-def get_current_user_moderator():
-    mock_user_moderator = get_mock_user_moderator()
-    if not isinstance( mock_user_moderator, get_user_model):
-        raise ValueError("Неверный пользователь")
-    return mock_user_moderator
+#     if not isinstance(mock_user, get_user_model):
+#         raise ValueError("Неверный пользователь")
+#     return mock_user
 
 
+# def get_current_user_moderator():
+#     mock_user_moderator = get_mock_user_moderator()
+#     if not isinstance( mock_user_moderator, get_user_model):
+#         raise ValueError("Неверный пользователь")
+#     return mock_user_moderator
 
 @swagger_auto_schema(
                 method='get',
@@ -75,27 +73,32 @@ def get_current_user_moderator():
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def drivers_list(request):
-    try:
-        mock_user = get_current_user()  # Используем внешнюю функцию
-    except ValueError as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    # try:
+    #     mock_user = get_current_user()  # Используем внешнюю функцию
+    # except ValueError as e:
+    #     return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
-    driver_name = request.GET.get('driver_name', '')
+    session_id = request.COOKIES.get('session_id')
+    quantity_of_drivers = 0
+    current_insurance_id = None
+    
+    if session_id:
+        user_id = redis_client.get(session_id)
+
+        if user_id:
+            # Удаляем вызов decode, так как user_id уже является строкой
+            user_id = user_id 
+            current_insurance = Insurance.objects.filter(creator_id=user_id, status='draft').first()
+            if current_insurance:
+                quantity_of_drivers = Driver_Insurance.objects.filter(insurance=current_insurance).aggregate(total_quantity=models.Count("id"))['total_quantity'] or 0 if current_insurance else 0
+                current_insurance_id = current_insurance.id
+
     drivers_list = Driver.objects.exclude(status='deleted')
+    driver_name = request.GET.get('driver_name', '')
 
     if driver_name:
         drivers_list = drivers_list.filter(name__icontains=driver_name)
-
-    current_insurance = Insurance.objects.filter(creator=mock_user, status='draft').first()
-
-    if current_insurance:
-        quantity_of_drivers = Driver_Insurance.objects.filter(insurance=current_insurance).aggregate(total_quantity=models.Count("id"))['total_quantity'] or 0 if current_insurance else 0
-        current_insurance_id = current_insurance.id
-
-    else:
-        quantity_of_drivers = 0
-        current_insurance_id = None
-
+    
     drivers = DriverSerializer(drivers_list, many=True).data
     response_data = {
             'drivers': drivers,

@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     
     'drivers',
+    "corsheaders",
     
 ]
 
@@ -41,6 +42,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
+    "corsheaders.middleware.CorsMiddleware",  # Добавьте перед CommonMiddleware
+    "django.middleware.common.CommonMiddleware",
 ]
 
 ROOT_URLCONF = 'transport_insurance.urls'
@@ -156,3 +160,18 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ]
 }
+
+CORS_ALLOW_ALL_ORIGINS = True  # Разрешить все источники (для разработки)
+# Или укажите конкретные источники:
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",  # Ваш фронтенд
+# ]
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "OPTIONS",
+]  # Разрешённые методы
+CORS_ALLOW_HEADERS = [
+    "content-type",
+    "authorization",
+]  # Разрешённые заголовки

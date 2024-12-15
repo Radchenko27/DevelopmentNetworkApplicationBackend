@@ -270,7 +270,7 @@ def driver_add_image(request, id_driver):
 
 @swagger_auto_schema(
     method='post',
-    request_body=DriverSerializer,
+    # request_body=DriverSerializer,
     responses={200: InsuranceSerializer, 400: "Ошибка в запросе. Невозможно добавить водителя.", 404: "Водитель не найден."},
     operation_summary="Добавить водителя в страховку",
     operation_description="Добавляет активного водителя в страховку."
@@ -287,10 +287,10 @@ def driver_add_to_draft(request, id_driver):
     else:
         if is_staff:
             return Response({'error': 'Администратор не имеет право добавлять водителя в страховку.'}, status=status.HTTP_403_FORBIDDEN)
-    
+   
     driver = get_object_or_404(Driver.objects.exclude(status='deleted'), id=id_driver)
     current_insurance, created = Insurance.objects.get_or_create(creator=user, status='draft')
-
+   
     if not Driver_Insurance.objects.filter(driver=driver, insurance=current_insurance).exists():
         created_driver_insurance = Driver_Insurance.objects.create(
             insurance=current_insurance,
@@ -682,7 +682,10 @@ logger = logging.getLogger(__name__)
         required=['email', 'password']
     ),
     responses={
-        200: openapi.Response('Успешный вход', ),
+        200: openapi.Response('Успешный вход',  schema=openapi.Schema(type=openapi.TYPE_OBJECT, 
+                                                    properties={
+                                                        'session_id': openapi.Schema(type=openapi.TYPE_STRING, description='Идентификатор сессии пользователя, сохранённый в Redis'),
+                                                    })), 
         401: 'Неверный email или пароль.'
     },
     operation_summary="Вход пользователя",
@@ -699,7 +702,7 @@ def login_user(request):
     user = authenticate(request, email=email, password=password)
     
     if user is not None:
-        # Вход пользователя
+       
         login(request, user)
 
         session_id = str(uuid.uuid4())
@@ -726,7 +729,11 @@ def login_user(request):
     method='post',
     request_body=CustomUserSerializer,
     responses={
-        201: 'Пользователь успешно зарегистрирован', 
+        201: openapi.Response('Пользователь успешно зарегистрирован', 
+                              schema=openapi.Schema(type=openapi.TYPE_OBJECT, 
+                                                    properties={
+                                                        'email': openapi.Schema(type=openapi.TYPE_STRING, description='Email пользователя'),
+                                                    })),
         400: 'Ошибка валидации данных'
     },
     operation_summary="Регистрация пользователя",
@@ -738,7 +745,7 @@ def register_user(request):
     serializer = CustomUserSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.save()
-        return Response({'message': 'Пользователь успешно зарегистрирован.'}, status=status.HTTP_201_CREATED)
+        return Response({'message': 'Пользователь успешно зарегистрирован.', "email": user.email}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     

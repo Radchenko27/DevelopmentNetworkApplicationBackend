@@ -100,8 +100,8 @@ class Insurance(models.Model):
     date_end = models.DateField(null=True, blank=True, verbose_name='Дата конца действия')
     date_formation = models.DateTimeField(null=True, blank=True, verbose_name='Дата оформления')
     date_completion = models.DateTimeField(null=True, blank=True, verbose_name='Дата завершения оформления')
-    car_brand = models.CharField(max_length=50, verbose_name='Марка')
-    car_model = models.CharField(max_length=50, verbose_name='Модель')
+    car_brand = models.CharField(null=True, blank=True, max_length=50, verbose_name='Марка')
+    car_model = models.CharField(null=True, blank=True, max_length=50, verbose_name='Модель')
     car_number = models.CharField(
                                 max_length=6,
                                 validators=[RegexValidator(

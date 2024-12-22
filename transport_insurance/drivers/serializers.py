@@ -52,8 +52,8 @@ class InsuranceSerializer(serializers.ModelSerializer):
 
 class CustomUserSerializer(serializers.ModelSerializer):
 
-    is_staff = serializers.BooleanField(default=True, required=False)
-    is_superuser = serializers.BooleanField(default=True, required=False)
+    is_staff = serializers.BooleanField(default=False, required=False)
+    is_superuser = serializers.BooleanField(default=False, required=False)
     
     class Meta:
         model = CustomUser

@@ -158,20 +158,48 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
-    ]
+    ],
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',  # Отключите BrowsableAPIRenderer
+    ),
 }
-
-CORS_ALLOW_ALL_ORIGINS = True  # Разрешить все источники (для разработки)
+CORS_ALLOW_CREDENTIALS = True
+# CORS_ALLOW_ALL_ORIGINS = True 
+CORS_ORIGIN_ALLOW_ALL = False # Разрешить все источники (для разработки)
 # Или укажите конкретные источники:
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:3000",  # Ваш фронтенд
-# ]
+
 CORS_ALLOW_METHODS = [
     "GET",
     "POST",
     "OPTIONS",
+    "PUT",
+    "DELETE",
 ]  # Разрешённые методы
 CORS_ALLOW_HEADERS = [
     "content-type",
     "authorization",
+    'Cookie',
+     "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+    "accept",
+    "accept-encoding",
 ]  # Разрешённые заголовки
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",  # Укажите допустимый источник
+]
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://localhost:\d+$",  # Если необходимо разрешить несколько портов
+]
+
+# (Дополнительно) Если вы работаете с HTTP-Only cookies:
+CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
+CORS_ORIGIN_WHITELIST = ['http://localhost:3000']
+# CSRF_COOKIE_HTTPONLY = True
+# SESSION_COOKIE_HTTPONLY = True
+# SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+# SESSION_COOKIE_SAMESITE = "Lax"  # Или "None", если запросы идут кросс-доменно
+# SESSION_COOKIE_SECURE = False  # False для локальной разработки

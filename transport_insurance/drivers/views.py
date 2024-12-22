@@ -499,12 +499,12 @@ def insurance_submit(request, id_insurance):
 
     empty_fields = []
     fields = ['certificate_number', 'certificate_series', 'date_begin', 'date_end', 'car_model', 'car_region', 'type',]
-    for field in fields:
-        if not getattr(insurance, field, None):
-            empty_fields.append(field)
-    if empty_fields:
-        empty_fields_str = ', '.join(empty_fields)
-        return Response({'error': f'Не все поля страховки заполнены. Пустыми остались:{empty_fields_str}'}, status=status.HTTP_400_BAD_REQUEST)
+    # for field in fields:
+    #     if not getattr(insurance, field, None):
+    #         empty_fields.append(field)
+    # if empty_fields:
+    #     empty_fields_str = ', '.join(empty_fields)
+    #     return Response({'error': f'Не все поля страховки заполнены. Пустыми остались:{empty_fields_str}'}, status=status.HTTP_400_BAD_REQUEST)
     
     insurance.status = 'formed'
     insurance.date_formation = timezone.now()
